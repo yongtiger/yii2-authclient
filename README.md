@@ -1,4 +1,6 @@
-# Yii2-authclient [v0.1.0] Wrapper of yii2-authclient
+# Yii2-authclient [v0.0.0]
+
+Initial commit.
 
 [![Latest Stable Version](https://poser.pugx.org/yongtiger/yii2-authclient/v/stable)](https://packagist.org/packages/yongtiger/yii2-authclient)
 [![Total Downloads](https://poser.pugx.org/yongtiger/yii2-authclient/downloads)](https://packagist.org/packages/yongtiger/yii2-authclient) 
@@ -7,13 +9,16 @@
 
 
 ## Features
-* Wrapper of `yii2-authclient`
 
+* Sample of extensions directory structure. `src`, `docs`, etc.
+* `README.md`
+* `composer.json`
+* `development-roadmap.md`
 
 ## Dependences
 
 * [Yii2 Advanced Template](https://github.com/yiisoft/yii2-app-advanced)
-* [yii2-authclient](https://github.com/yiisoft/yii2-authclient)
+
 
 ## Installation   
 
