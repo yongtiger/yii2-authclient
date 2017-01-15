@@ -43,6 +43,7 @@ namespace yongtiger\authclient\clients;
  *                 'class' => 'yii\authclient\clients\Google',
  *                 'clientId' => 'google_client_id',
  *                 'clientSecret' => 'google_client_secret',
+ *                 ///'scope' => 'profile email',
  *             ],
  *         ],
  *     ]
@@ -69,38 +70,45 @@ namespace yongtiger\authclient\clients;
     Array
     (
         [kind] => plus#person
-        [etag] => "FT7X6cYw9BSnPtIywEFNNGVVdio/m83Ca7xVMoDVrGZ6EOj8pdlzKbM"
+        [etag] => "FT7X6cYw9BSnPtIywEFNNGVVdio/tQFBFHjBCHvOMXnqClXkqleUXLw"
+        [gender] => 1
         [emails] => Array
             (
                 [0] => Array
                     (
-                        [value] => service.brainbook.cc@gmail.com
+                        [value] => sunboy2544@gmail.com
                         [type] => account
                     )
 
             )
 
         [objectType] => person
-        [id] => 113544724474573231306
-        [displayName] => service brainbook
+        [id] => 109758725292885940438
+        [displayName] => boy Sun
         [name] => Array
             (
-                [familyName] => brainbook
-                [givenName] => service
+                [familyName] => Sun
+                [givenName] => boy
             )
 
+        [url] => https://plus.google.com/109758725292885940438
         [image] => Array
             (
                 [url] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50
                 [isDefault] => 1
             )
 
-        [isPlusUser] => 
+        [isPlusUser] => 1
         [language] => zh_CN
+        [circledByCount] => 1
         [verified] => 
-        [fullname] => service brainbook
-        [email] => service.brainbook.cc@gmail.com
+        [uid] => 109758725292885940438
+        [email] => sunboy2544@gmail.com
+        [fullname] => boy Sun
+        [firstname] => boy
+        [lastname] => Sun
         [avatarUrl] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50
+        [linkUrl] => https://plus.google.com/109758725292885940438
     )
  * ```
  *
@@ -110,6 +118,8 @@ namespace yongtiger\authclient\clients;
  */
 class Google extends \yii\authclient\clients\Google implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @inheritdoc
      */
@@ -125,38 +135,30 @@ class Google extends \yii\authclient\clients\Google implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'uid' => 'id',
+
+            'email' => ['emails', 0, 'value'],      ///`[emails][0][value] => yongtiger@yahoo.com`
+
             ///Google register a new account with Email instead of username, also needed first name and last name.
             ///So we generate the fullname with givenName and familyName, 
             ///according to the above `EXAMPLE JSON RESPONSE BODY FOR GET`: `[givenName] => Tiger` and `[familyName] => Yong`.
             'fullname' => function ($attributes) {
+                if (!isset($attributes['name']) || empty($attributes['name']['givenName']) || empty($attributes['name']['familyName'])) return null;
                 return $attributes['name']['givenName'] . ' ' . $attributes['name']['familyName'];
             },
-            'email' => ['emails', 0, 'value'],      ///`[emails][0][value] => yongtiger@yahoo.com`
-            'avatarUrl' => ['image', 'url'],        ///`[image][url] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50`
+
+            'firstname' => ['name', 'givenName'],
+
+            'lastname' => ['name', 'familyName'],
+
+            'gender' => function ($attributes) {
+                if (!isset($attributes['gender'])) return null;
+                return $attributes['gender'] == 'male' ? static::GENDER_MALE : ($attributes['gender'] == 'female' ? static::GENDER_FEMALE : null);
+            },
+
+            'avatarUrl' => ['image', 'url'],    ///`[image][url] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50`
+
+            'linkUrl' => 'url',
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEmail()
-    {
-        return $this->getUserAttributes()['email'] ? : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFullName()
-    {
-        return $this->getUserAttributes()['fullname'] ? : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAvatarUrl()
-    {
-        return $this->getUserAttributes()['avatarUrl'] ? : null;
     }
 }

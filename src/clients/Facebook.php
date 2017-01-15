@@ -17,8 +17,6 @@ namespace yongtiger\authclient\clients;
  *
  * In order to use Facebook OAuth2 you must add your Facebook Login product at <https://developers.facebook.com/apps>.
  *
- * //Note: Be sure to your Facebook appication PUBLIC!
- *
  * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`: 
@@ -44,6 +42,7 @@ namespace yongtiger\authclient\clients;
  *                 'class' => 'yii\authclient\clients\Facebook',
  *                 'clientId' => 'facebook_client_id',
  *                 'clientSecret' => 'facebook_client_secret',
+ *                 ///'scope' => 'email',
  *             ],
  *         ],
  *     ]
@@ -75,7 +74,7 @@ namespace yongtiger\authclient\clients;
         [name] => Tiger Yong
         [first_name] => Tiger
         [last_name] => Yong
-        [gender] => male
+        [gender] => 1
         [age_range] => Array
             (
                 [min] => 21
@@ -98,7 +97,13 @@ namespace yongtiger\authclient\clients;
         [verified] => 1
         [email] => tigeryang.brainbook@outlook.com
         [id] => 123618604810465
+        [uid] => 123618604810465
+        [fullname] => Tiger Yong
+        [firstname] => Tiger
+        [lastname] => Yong
+        [language] => en_US
         [avatarUrl] => https://scontent.xx.fbcdn.net/v/t1.0-1/c15.0.50.50/p50x50/10354686_10150004552801856_220367501106153455_n.jpg?oh=978df650af5b925f321fe4050af2869f&oe=5911542F
+        [linkUrl] => https://www.facebook.com/app_scoped_user_id/123618604810465/
     )
  * ```
  *
@@ -110,6 +115,8 @@ namespace yongtiger\authclient\clients;
  */
 class Facebook extends \yii\authclient\clients\Facebook implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @var array list of attribute names, which should be requested from API to initialize user attributes.
      * @since 2.0.5
@@ -137,31 +144,24 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'uid' => 'id',
+
+            'fullname' => 'name',
+
+            'firstname' => 'first_name',
+
+            'lastname' => 'last_name',
+
+            'gender' => function ($attributes) {
+                if (!isset($attributes['gender'])) return null;
+                return $attributes['gender'] == 'male' ? static::GENDER_MALE : ($attributes['gender'] == 'female' ? static::GENDER_FEMALE : null);
+            },
+
+            'language' => 'locale',
+
             'avatarUrl' => ['picture', 'data', 'url'],
+
+            'linkUrl' => 'link',
         ];
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getEmail()
-    {
-        return $this->getUserAttributes()['email'] ? : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getFullName()
-    {
-        return $this->getUserAttributes()['name'] ? : null;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function getAvatarUrl()
-    {
-        return $this->getUserAttributes()['avatarUrl'] ? : null;
     }
 }

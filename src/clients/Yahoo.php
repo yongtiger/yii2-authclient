@@ -91,7 +91,7 @@ use yii\authclient\OAuth2;
             )
 
         [familyName] => yong
-        [gender] => M
+        [gender] => 1
         [givenName] => tiger
         [image] => Array
             (
@@ -129,9 +129,13 @@ use yii\authclient\OAuth2;
         [bdRestricted] => 1
         [profilePermission] => PRIVATE
         [uri] => https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile
-        [fullname] => tiger yong
+        [uid] => IQEUSXXTPBMUFGMWXIJOT3HDII
         [email] => yongtiger@yahoo.com
-        [avatarUrl] => https://s.yimg.com/sf/modern/images/default_user_profile_pic_192.png
+        [fullname] => tiger yong
+        [firstname] => tiger
+        [lastname] => yong
+        [language] => en-US
+        [linkUrl] => https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile
     )
  * ```
  *
@@ -166,6 +170,8 @@ use yii\authclient\OAuth2;
  */
 class Yahoo extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @inheritdoc
      */
@@ -207,22 +213,6 @@ class Yahoo extends OAuth2 implements IAuth
     /**
      * @inheritdoc
      */
-    protected function defaultNormalizeUserAttributeMap() {
-        return [
-            ///Yahoo register a new account with Email instead of username, also needed first name and last name.
-            ///So we generate the fullname with givenName and familyName, 
-            ///according to the above `EXAMPLE JSON RESPONSE BODY FOR GET`: `[givenName] => Tiger` and `[familyName] => Yong`.
-            'fullname' => function ($attributes) {
-                return $attributes['givenName'] . ' ' . $attributes['familyName'];
-            },
-            'email' => ['emails', 0, 'handle'],      ///`[emails][0][handle] => yongtiger@yahoo.com`
-            'avatarUrl' => ['image', 'imageUrl'],    ///`[image][imageUrl] => https://s.yimg.com/sf/modern/images/default_user_profile_pic_192.png`
-        ];
-    }
-
-    /**
-     * @inheritdoc
-     */
     protected function initUserAttributes() {
         $guid = $this->api('me/guid?format=json', 'GET');
         $profile = $this->api('user/'. $guid['guid']['value'] .'/profile?format=json', 'GET');
@@ -232,24 +222,32 @@ class Yahoo extends OAuth2 implements IAuth
     /**
      * @inheritdoc
      */
-    public function getEmail()
-    {
-        return $this->getUserAttributes()['email'] ? : null;
-    }
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'uid' => 'guid',
 
-    /**
-     * @inheritdoc
-     */
-    public function getFullName()
-    {
-        return $this->getUserAttributes()['fullname'] ? : null;
-    }
+            'email' => ['emails', 0, 'handle'],      ///`[emails][0][handle] => yongtiger@yahoo.com`
 
-    /**
-     * @inheritdoc
-     */
-    public function getAvatarUrl()
-    {
-        return $this->getUserAttributes()['avatarUrl'] ? : null;
+            ///Yahoo register a new account with Email instead of username, also needed first name and last name.
+            ///So we generate the fullname with givenName and familyName, 
+            ///according to the above `EXAMPLE JSON RESPONSE BODY FOR GET`: `[givenName] => Tiger` and `[familyName] => Yong`.
+            'fullname' => function ($attributes) {
+                if (!isset($attributes['givenName']) || !isset($attributes['familyName'])) return null;
+                return $attributes['givenName'] . ' ' . $attributes['familyName'];
+            },
+
+            'firstname' => 'givenName',
+
+            'lastname' => 'familyName',
+
+            'gender' => function ($attributes) {
+                if (!isset($attributes['gender'])) return null;
+                return $attributes['gender'] == 'M' ? static::GENDER_MALE : ($attributes['gender'] == 'F' ? static::GENDER_FEMALE : null);
+            },
+
+            'language' => 'lang',
+
+            'linkUrl' => 'uri',
+        ];
     }
 }

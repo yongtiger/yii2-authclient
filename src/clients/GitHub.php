@@ -42,6 +42,7 @@ namespace yongtiger\authclient\clients;
  *                 'class' => 'yongtiger\authclient\clients\GitHub',
  *                 'clientId' => 'github_client_id',
  *                 'clientSecret' => 'github_client_secret',
+ *                 ///'scope' => 'user:email user',
  *             ],
  *         ],
  *     ]
@@ -55,6 +56,7 @@ namespace yongtiger\authclient\clients;
  *
  * ```
  * {  "login": "magicdict",  "id": 897796,  "avatar_url": "https://avatars.githubusercontent.com/u/897796?v=3",  "gravatar_id": "",  "url": "https://api.github.com/users/magicdict",  "html_url": "https://github.com/magicdict",  "followers_url": "https://api.github.com/users/magicdict/followers",  "following_url": "https://api.github.com/users/magicdict/following{/other_user}",  "gists_url": "https://api.github.com/users/magicdict/gists{/gist_id}",  "starred_url": "https://api.github.com/users/magicdict/starred{/owner}{/repo}",  "subscriptions_url": "https://api.github.com/users/magicdict/subscriptions",  "organizations_url": "https://api.github.com/users/magicdict/orgs",  "repos_url": "https://api.github.com/users/magicdict/repos",  "events_url": "https://api.github.com/users/magicdict/events{/privacy}",  "received_events_url": "https://api.github.com/users/magicdict/received_events",  "type": "User",  "site_admin": false,  "name": "MagicHu",  "company": "Shanghai Chuwa software co.ltd",  "blog": "http://www.mywechatapp.com",  "location": "Shanghai,China",  "email": "mynightelfplayer@hotmail.com",  "hireable": true,  "bio": null,  "public_repos": 7,  "public_gists": 0,  "followers": 50,  "following": 2,  "created_at": "2011-07-06T09:26:40Z",  "updated_at": "2016-02-06T09:09:34Z"}
+ * ```
  * 
  * getUserAttributes():
  *
@@ -94,7 +96,7 @@ namespace yongtiger\authclient\clients;
         [private_gists] => 0
         [total_private_repos] => 0
         [owned_private_repos] => 0
-        [disk_usage] => 120
+        [disk_usage] => 289
         [collaborators] => 0
         [plan] => Array
             (
@@ -104,6 +106,10 @@ namespace yongtiger\authclient\clients;
                 [private_repos] => 0
             )
 
+        [uid] => 19513015
+        [fullname] => yongtiger
+        [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
+        [linkUrl] => https://api.github.com/users/yongtiger
     )
  * ```
  *
@@ -114,6 +120,8 @@ namespace yongtiger\authclient\clients;
  */
 class GitHub extends \yii\authclient\clients\GitHub implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @inheritdoc
      */
@@ -127,24 +135,15 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
     /**
      * @inheritdoc
      */
-    public function getEmail()
-    {
-        return $this->getUserAttributes()['email'] ? : null;
-    }
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'uid' => 'id',
 
-    /**
-     * @inheritdoc
-     */
-    public function getFullName()
-    {
-        return $this->getUserAttributes()['login'] ? : null;
-    }
+            'fullname' => 'login',
 
-    /**
-     * @inheritdoc
-     */
-    public function getAvatarUrl()
-    {
-        return $this->getUserAttributes()['avatar_url'] ? : null;
+            'avatarUrl' => 'avatar_url',
+
+            'linkUrl' => 'url',
+        ];
     }
 }
