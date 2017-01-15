@@ -138,7 +138,7 @@ class Live extends \yii\authclient\clients\Live implements IAuth
             'lastname' => 'last_name',
 
             'gender' => function ($attributes) {
-                if (!isset($attributes['gender'])) return null;
+                if (!isset($attributes['gender'])) return null;   ///why always null???
                 return $attributes['gender'] == 'M' ? static::GENDER_MALE : ($attributes['gender'] == 'F' ? static::GENDER_FEMALE : null);
             },
 

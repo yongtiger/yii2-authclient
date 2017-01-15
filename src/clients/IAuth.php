@@ -15,7 +15,7 @@ namespace yongtiger\authclient\clients;
 /**
  * Oauth Interface
  *
- * Sample date:
+ * Sample data:
  * ```
     {
        "id": "ab30d9e58b344caa", 
