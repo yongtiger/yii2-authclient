@@ -66,49 +66,45 @@ namespace yongtiger\authclient\clients;
  *
  * `getUserAttributes()`:
  *
- * ```php
     Array
     (
         [kind] => plus#person
-        [etag] => "FT7X6cYw9BSnPtIywEFNNGVVdio/tQFBFHjBCHvOMXnqClXkqleUXLw"
-        [gender] => 1
+        [etag] => "FT7X6cYw9BSnPtIywEFNNGVVdio/m83Ca7xVMoDVrGZ6EOj8pdlzKbM"
         [emails] => Array
             (
                 [0] => Array
                     (
-                        [value] => sunboy2544@gmail.com
+                        [value] => service.brainbook.cc@gmail.com
                         [type] => account
                     )
 
             )
 
         [objectType] => person
-        [id] => 109758725292885940438
-        [displayName] => boy Sun
+        [id] => 113544724474573231306
+        [displayName] => service brainbook
         [name] => Array
             (
-                [familyName] => Sun
-                [givenName] => boy
+                [familyName] => brainbook
+                [givenName] => service
             )
 
-        [url] => https://plus.google.com/109758725292885940438
         [image] => Array
             (
                 [url] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50
                 [isDefault] => 1
             )
 
-        [isPlusUser] => 1
+        [isPlusUser] => 
         [language] => zh_CN
-        [circledByCount] => 1
         [verified] => 
-        [uid] => 109758725292885940438
-        [email] => sunboy2544@gmail.com
-        [fullname] => boy Sun
-        [firstname] => boy
-        [lastname] => Sun
+        [openid] => 113544724474573231306
+        [email] => service.brainbook.cc@gmail.com
+        [fullname] => service brainbook
+        [firstname] => service
+        [lastname] => brainbook
+        [gender] => 
         [avatarUrl] => https://lh3.googleusercontent.com/-XdUIqdMkCWA/AAAAAAAAAAI/AAAAAAAAAAA/4252rscbv5M/photo.jpg?sz=50
-        [linkUrl] => https://plus.google.com/109758725292885940438
     )
  * ```
  *
@@ -135,7 +131,7 @@ class Google extends \yii\authclient\clients\Google implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'uid' => 'id',
+            'openid' => 'id',
 
             'email' => ['emails', 0, 'value'],      ///`[emails][0][value] => yongtiger@yahoo.com`
 

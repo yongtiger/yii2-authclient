@@ -51,10 +51,28 @@ use yii\authclient\OAuth2;
  * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
  *
  * ```
+ * {"guid":{"value":"IQEUSXXTPBMUFGMWXIJOT3HDII","uri":"https://social.yahooapis.com/v1/me/guid"}}
+ * ```
+ *
+ * ```
  * {"profile":{"guid":"IQEUSXXTPBMUFGMWXIJOT3HDII","addresses":[{"city":"","country":"US","current":true,"id":1,"postalCode":"","state":"","street":"","type":"HOME"}],"ageCategory":"A","created":"2017-01-13T02:29:31Z","emails":[{"handle":"yongtiger@yahoo.com","id":2,"primary":false,"type":"HOME"}],"familyName":"yong","gender":"M","givenName":"tiger","image":{"height":192,"imageUrl":"https://s.yimg.com/sf/modern/images/default_user_profile_pic_192.png","size":"192x192","width":192},"intl":"us","jurisdiction":"us","lang":"en-US","memberSince":"2017-01-12T22:41:07Z","migrationSource":1,"nickname":"tiger","notStored":true,"nux":"0","phones":[{"id":10,"number":"1-8315358975","type":"MOBILE","verified":true}],"profileMode":"PUBLIC","profileStatus":"ACTIVE","profileUrl":"http://profile.yahoo.com/IQEUSXXTPBMUFGMWXIJOT3HDII","isConnected":true,"profileHidden":false,"bdRestricted":true,"profilePermission":"PRIVATE","uri":"https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile"}}
  * ```
  *
  * getUserAttributes():
+ * ```php
+    Array
+    (
+        [guid] => Array
+            (
+                [value] => IQEUSXXTPBMUFGMWXIJOT3HDII
+                [uri] => https://social.yahooapis.com/v1/me/guid
+            )
+
+        [openid] => IQEUSXXTPBMUFGMWXIJOT3HDII
+    )
+ * ```
+ *
+ * getUserInfo($attribute):
  *
  * ```php
     Array
@@ -139,6 +157,12 @@ use yii\authclient\OAuth2;
     )
  * ```
  *
+ * Get extra user info: pofile
+ *
+ * ```php
+ * echo $client->email;
+ * ```
+ *
  * [REFERENCES]
  *
  * GET returns the profile of a given {guid}:
@@ -188,6 +212,17 @@ class Yahoo extends OAuth2 implements IAuth
     /**
      * @inheritdoc
      */
+    public function init()
+    {
+        parent::init();
+        if ($this->scope === null) {
+            $this->scope = 'openid';
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultName() {
         return 'yahoo';
     }
@@ -214,9 +249,7 @@ class Yahoo extends OAuth2 implements IAuth
      * @inheritdoc
      */
     protected function initUserAttributes() {
-        $guid = $this->api('me/guid?format=json', 'GET');
-        $profile = $this->api('user/'. $guid['guid']['value'] .'/profile?format=json', 'GET');
-        return $profile['profile'];
+        return $this->api('me/guid?format=json', 'GET');
     }
 
     /**
@@ -224,8 +257,17 @@ class Yahoo extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'uid' => 'guid',
+            'openid' => ['guid', 'value'],
+        ];
+    }
 
+    /**
+     * Proflie Normalize User Attribute Map
+     *
+     * @return array
+     */
+    protected function profileNormalizeUserAttributeMap() {
+        return [
             'email' => ['emails', 0, 'handle'],      ///`[emails][0][handle] => yongtiger@yahoo.com`
 
             ///Yahoo register a new account with Email instead of username, also needed first name and last name.
@@ -247,7 +289,28 @@ class Yahoo extends OAuth2 implements IAuth
 
             'language' => 'lang',
 
+            'avatarUrl' => ['image', 'imageUrl'],
+
             'linkUrl' => 'uri',
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUserInfo($attribute)
+    {
+        if (isset($this->getUserAttributes()[$attribute])) {
+            return $this->getUserAttributes()[$attribute];
+        }
+
+        ///Get extra user info: profile
+        $this->setNormalizeUserAttributeMap($this->profileNormalizeUserAttributeMap());
+        $profile = $this->api('user/'. $this->getUserAttributes()['openid'] .'/profile?format=json', 'GET');
+        $attributes = $this->normalizeUserAttributes($profile['profile']);
+        $this->setUserAttributes(array_merge($this->getUserAttributes(), $attributes));
+
+        return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
+    }
+
 }

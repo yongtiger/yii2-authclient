@@ -74,33 +74,40 @@ namespace yongtiger\authclient\clients;
  * getUserAttributes():
  *
  * ```php
-    Array
-    (
-        [id] => ab30d9e58b344caa
-        [name] => tiger yang
-        [first_name] => tiger
-        [last_name] => yang
-        [link] => https://profile.live.com/
-        [gender] => 
-        [emails] => Array
-            (
-                [preferred] => tigeryang.brainbook@outlook.com
-                [account] => tigeryang.brainbook@outlook.com
-                [personal] => 
-                [business] => 
-            )
+  Array
+  (
+      [id] => ab30d9e58b344caa
+      [name] => tiger yang
+      [first_name] => tiger
+      [last_name] => yang
+      [link] => https://profile.live.com/
+      [birth_day] => 15
+      [birth_month] => 8
+      [birth_year] => 1970
+      [work] => Array
+          (
+          )
 
-        [locale] => zh_CN
-        [updated_time] => 2017-01-15T07:57:30+0000
-        [uid] => ab30d9e58b344caa
-        [email] => tigeryang.brainbook@outlook.com
-        [fullname] => tiger yang
-        [firstname] => tiger
-        [lastname] => yang
-        [language] => zh_CN
-        [avatarUrl] => https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large
-        [linkUrl] => https://profile.live.com/cid-ab30d9e58b344caa
-    )
+      [gender] => 
+      [emails] => Array
+          (
+              [preferred] => tigeryang.brainbook@outlook.com
+              [account] => tigeryang.brainbook@outlook.com
+              [personal] => 
+              [business] => 
+          )
+
+      [locale] => zh_CN
+      [updated_time] => 2017-01-16T19:31:18+0000
+      [openid] => ab30d9e58b344caa
+      [email] => tigeryang.brainbook@outlook.com
+      [fullname] => tiger yang
+      [firstname] => tiger
+      [lastname] => yang
+      [language] => zh_CN
+      [avatarUrl] => https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large
+      [linkUrl] => https://profile.live.com/cid-ab30d9e58b344caa
+  )
  * ```
  *
  * [REFERENCES]
@@ -127,7 +134,7 @@ class Live extends \yii\authclient\clients\Live implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'uid' => 'id',
+            'openid' => 'id',
 
             'email' => ['emails', 'account'],
 

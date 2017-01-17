@@ -1,5 +1,4 @@
 <?php ///[yongtiger/yii2-authclient]
-
 /**
  * Yii2 user
  *
@@ -16,17 +15,32 @@ namespace yongtiger\authclient\clients;
  * Trait ClientTrait
  *
  * Used of client classes which implement the interface IAuth.
- * 
+ *
  * @package yongtiger\authclient\clients
  */
 trait ClientTrait
 {
+
     /**
      * @inheritdoc
      */
-    public function getUid()
+    public function getUserInfo($attribute)
     {
-        return isset($this->getUserAttributes()['uid']) ? $this->getUserAttributes()['uid'] : null;
+        if (isset($this->getUserAttributes()[$attribute])) {
+            return $this->getUserAttributes()[$attribute];
+        }
+
+        ///Get extra user info: ...
+
+        return null;
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getOpenid()
+    {
+        return isset($this->getUserAttributes()['openid']) ? $this->getUserAttributes()['openid'] : $this->getUserInfo('openid');
     }
 
     /**
@@ -34,7 +48,7 @@ trait ClientTrait
      */
     public function getEmail()
     {
-        return isset($this->getUserAttributes()['email']) ? $this->getUserAttributes()['email'] : null;
+        return isset($this->getUserAttributes()['email']) ? $this->getUserAttributes()['email'] : $this->getUserInfo('email');
     }
 
     /**
@@ -42,7 +56,7 @@ trait ClientTrait
      */
     public function getFullname()
     {
-        return isset($this->getUserAttributes()['fullname']) ? $this->getUserAttributes()['fullname'] : null;
+        return isset($this->getUserAttributes()['fullname']) ? $this->getUserAttributes()['fullname'] : $this->getUserInfo('fullname');
     }
 
     /**
@@ -50,7 +64,7 @@ trait ClientTrait
      */
     public function getFirstname()
     {
-        return isset($this->getUserAttributes()['firstname']) ? $this->getUserAttributes()['firstname'] : null;
+        return isset($this->getUserAttributes()['firstname']) ? $this->getUserAttributes()['firstname'] : $this->getUserInfo('firstname');
     }
 
     /**
@@ -58,7 +72,7 @@ trait ClientTrait
      */
     public function getLastname()
     {
-        return isset($this->getUserAttributes()['lastname']) ? $this->getUserAttributes()['lastname'] : null;
+        return isset($this->getUserAttributes()['lastname']) ? $this->getUserAttributes()['lastname'] : $this->getUserInfo('lastname');
     }
 
     /**
@@ -66,7 +80,7 @@ trait ClientTrait
      */
     public function getGender()
     {
-        return isset($this->getUserAttributes()['gender']) ? $this->getUserAttributes()['gender'] : null;
+        return isset($this->getUserAttributes()['gender']) ? $this->getUserAttributes()['gender'] : $this->getUserInfo('gender');
     }
 
     /**
@@ -74,14 +88,15 @@ trait ClientTrait
      */
     public function getLanguage()
     {
-        return isset($this->getUserAttributes()['language']) ? $this->getUserAttributes()['language'] : null;
+        return isset($this->getUserAttributes()['language']) ? $this->getUserAttributes()['language'] : $this->getUserInfo('language');
     }
+
     /**
      * @inheritdoc
      */
     public function getAvatarUrl()
     {
-        return isset($this->getUserAttributes()['avatarUrl']) ? $this->getUserAttributes()['avatarUrl'] : null;
+        return isset($this->getUserAttributes()['avatarUrl']) ? $this->getUserAttributes()['avatarUrl'] : $this->getUserInfo('avatarUrl');
     }
 
     /**
@@ -89,7 +104,6 @@ trait ClientTrait
      */
     public function getLinkUrl()
     {
-        return isset($this->getUserAttributes()['linkUrl']) ? $this->getUserAttributes()['linkUrl'] : null;
+        return isset($this->getUserAttributes()['linkUrl']) ? $this->getUserAttributes()['linkUrl'] : $this->getUserInfo('linkUrl');
     }
-
 }

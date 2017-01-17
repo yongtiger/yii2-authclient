@@ -144,7 +144,7 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'uid' => 'id',
+            'openid' => 'id',
 
             'fullname' => 'name',
 
@@ -164,4 +164,5 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
             'linkUrl' => 'link',
         ];
     }
+    
 }

@@ -16,9 +16,9 @@ namespace yongtiger\authclient\clients;
  * Oauth Interface
  *
  * Sample data:
- * ```
+ * ```php
     {
-       "id": "ab30d9e58b344caa", 
+       "openid": "ab30d9e58b344caa", 
        "email": "tigeryang.brainbook@outlook.com", 
        "fullname": "tiger yang", 
        "firstname": "tiger", 
@@ -29,6 +29,32 @@ namespace yongtiger\authclient\clients;
        "linkUrl": "https://profile.live.com/", 
     }
  * ```
+ *
+ * Sample usage:
+ *
+ * ```php
+    public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+    {
+        // uncomment below to see which attributes you get back
+        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///the first call returns the basic information, including openid, etc.
+        echo "<pre>";print_r($client->getUserInfo('email'));echo "</pre>";  ///returns more user info
+
+        echo "<pre>";print_r($client->openid);echo "</pre>";
+        echo "<pre>";print_r($client->email);echo "</pre>";
+        echo "<pre>";print_r($client->fullName);echo "</pre>";
+        echo "<pre>";print_r($client->firstName);echo "</pre>";
+        echo "<pre>";print_r($client->lastName);echo "</pre>";
+        echo "<pre>";print_r($client->language);echo "</pre>";
+        echo "<pre>";print_r($client->gender);echo "</pre>";
+        echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+        echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+        
+        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///later call returns more user information
+        exit;
+        // ...
+    }
+ * ```
+ *
  */
 
 interface IAuth extends \yii\authclient\ClientInterface
@@ -37,20 +63,30 @@ interface IAuth extends \yii\authclient\ClientInterface
     const GENDER_FEMALE = 0;
 
     /**
+     * Get user info included extra attribute
+     *
+     * When there is no specified attribute in getUserAttributes(), try calling this method to get. @see [[trait ClientTrait]]
+     *
+     * @param string $attribute user extra attribute
+     * @return array
+     */
+    public function getUserInfo($attribute);
+    
+    /**
      * Note: You can not use getId() because it conflicts with getId() of BaseClient!
      *
-     * @return string|null
+     * @return string
      */
-    public function getUid();
+    public function getOpenid();
 
     /**
-     * @return string|null
+     * @return string
      */
     public function getEmail();
     
     /**
      * Note: You can not use getName() because it conflicts with getName() of BaseClient!
-     * In addition, do not recommend using getUsername(), because some clients no username, but only fullname (firstname/lastname or givenname/familyname).
+     * In addition, do not recommend using getUsername(), because some clients has no username, but only fullname (firstname/lastname or givenname/familyname).
      * If you want to get username, you can use fullname conversion derived (e.g. convert to lowercase, remove or replace blank space with an underscore).
      *
      * @return string|null
@@ -68,7 +104,7 @@ interface IAuth extends \yii\authclient\ClientInterface
     public function getLastname();
     
     /**
-     * @return string|null
+     * @return const|null
      */
     public function getGender();
 

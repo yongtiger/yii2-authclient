@@ -19,7 +19,7 @@ namespace yongtiger\authclient\clients;
  *
  * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
- * Sample `Callback URL`: 
+ * Sample `Callback URL`:
  * `http://localhost/1_oauth/frontend/web/index.php?r=site/auth` (OK)
  * `http://localhost/1_oauth/frontend/web/index.php?r=site%2Fauth` (OK)
  * `http://localhost/1_oauth/frontend/web/index.php?r=site/auth&authclient=github` (OK)
@@ -30,7 +30,7 @@ namespace yongtiger\authclient\clients;
  * `http://localhost/1_oauth/frontend/web/?r=site/auth&authclient=github` (OK)
  * `http://localhost/1_oauth/frontend/web/?r=site%2Fauth&authclient=github` (OK)
  * `http://localhost/1_oauth/frontend/web/?r=site%2Fauth%26authclient=github` (WRONG!)
- * 
+ *
  * Example application configuration:
  *
  * ```php
@@ -51,13 +51,13 @@ namespace yongtiger\authclient\clients;
  * ```
  *
  * [EXAMPLE JSON RESPONSE BODY FOR GET]
- * 
+ *
  * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
  *
  * ```
- * {  "login": "magicdict",  "id": 897796,  "avatar_url": "https://avatars.githubusercontent.com/u/897796?v=3",  "gravatar_id": "",  "url": "https://api.github.com/users/magicdict",  "html_url": "https://github.com/magicdict",  "followers_url": "https://api.github.com/users/magicdict/followers",  "following_url": "https://api.github.com/users/magicdict/following{/other_user}",  "gists_url": "https://api.github.com/users/magicdict/gists{/gist_id}",  "starred_url": "https://api.github.com/users/magicdict/starred{/owner}{/repo}",  "subscriptions_url": "https://api.github.com/users/magicdict/subscriptions",  "organizations_url": "https://api.github.com/users/magicdict/orgs",  "repos_url": "https://api.github.com/users/magicdict/repos",  "events_url": "https://api.github.com/users/magicdict/events{/privacy}",  "received_events_url": "https://api.github.com/users/magicdict/received_events",  "type": "User",  "site_admin": false,  "name": "MagicHu",  "company": "Shanghai Chuwa software co.ltd",  "blog": "http://www.mywechatapp.com",  "location": "Shanghai,China",  "email": "mynightelfplayer@hotmail.com",  "hireable": true,  "bio": null,  "public_repos": 7,  "public_gists": 0,  "followers": 50,  "following": 2,  "created_at": "2011-07-06T09:26:40Z",  "updated_at": "2016-02-06T09:09:34Z"}
+ * {"login": "magicdict",  "id": 897796,  "avatar_url": "https://avatars.githubusercontent.com/u/897796?v=3",  "gravatar_id": "",  "url": "https://api.github.com/users/magicdict",  "html_url": "https://github.com/magicdict",  "followers_url": "https://api.github.com/users/magicdict/followers",  "following_url": "https://api.github.com/users/magicdict/following{/other_user}",  "gists_url": "https://api.github.com/users/magicdict/gists{/gist_id}",  "starred_url": "https://api.github.com/users/magicdict/starred{/owner}{/repo}",  "subscriptions_url": "https://api.github.com/users/magicdict/subscriptions",  "organizations_url": "https://api.github.com/users/magicdict/orgs",  "repos_url": "https://api.github.com/users/magicdict/repos",  "events_url": "https://api.github.com/users/magicdict/events{/privacy}",  "received_events_url": "https://api.github.com/users/magicdict/received_events",  "type": "User",  "site_admin": false,  "name": "MagicHu",  "company": "Shanghai Chuwa software co.ltd",  "blog": "http://www.mywechatapp.com",  "location": "Shanghai,China",  "email": "mynightelfplayer@hotmail.com",  "hireable": true,  "bio": null,  "public_repos": 7,  "public_gists": 0,  "followers": 50,  "following": 2,  "created_at": "2011-07-06T09:26:40Z",  "updated_at": "2016-02-06T09:09:34Z"}
  * ```
- * 
+ *
  * getUserAttributes():
  *
  * ```php
@@ -84,7 +84,7 @@ namespace yongtiger\authclient\clients;
         [company] => 
         [blog] => 
         [location] => 
-        [email] => 3196127698@qq.com
+        [email] => 
         [hireable] => 
         [bio] => 
         [public_repos] => 3
@@ -96,7 +96,7 @@ namespace yongtiger\authclient\clients;
         [private_gists] => 0
         [total_private_repos] => 0
         [owned_private_repos] => 0
-        [disk_usage] => 289
+        [disk_usage] => 295
         [collaborators] => 0
         [plan] => Array
             (
@@ -106,11 +106,17 @@ namespace yongtiger\authclient\clients;
                 [private_repos] => 0
             )
 
-        [uid] => 19513015
+        [openid] => 19513015
         [fullname] => yongtiger
         [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
         [linkUrl] => https://api.github.com/users/yongtiger
     )
+ * ```
+ *
+ * Get extra user info: email
+ *
+ * ```php
+ * echo $client->email;
  * ```
  *
  * [REFERENCES]
@@ -137,7 +143,7 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'uid' => 'id',
+            'openid' => 'id',
 
             'fullname' => 'login',
 
@@ -146,4 +152,42 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
             'linkUrl' => 'url',
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function initUserAttributes()
+    {
+        return $this->api('user', 'GET');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUserInfo($attribute)
+    {
+        if (isset($this->getUserAttributes()[$attribute])) {
+            return $this->getUserAttributes()[$attribute];
+        }
+
+        ///Get extra user info: email
+        if($attribute == 'email'){
+            // in case user set 'Keep my email address private' in GitHub profile, email should be retrieved via extra API request
+            $scopes = explode(' ', $this->scope);
+            if (in_array('user:email', $scopes, true) || in_array('user', $scopes, true)) {
+                $emails = $this->api('user/emails', 'GET');
+                if (!empty($emails)) {
+                    foreach ($emails as $email) {
+                        if ($email['primary'] == 1 && $email['verified'] == 1) {
+                            $this->setUserAttributes(array_merge($this->getUserAttributes(), ['email' => $email['email']]));
+                            return $this->getUserAttributes()[$attribute];
+                        }
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
 }
