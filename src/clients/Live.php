@@ -129,6 +129,7 @@ class Live extends \yii\authclient\clients\Live implements IAuth
             'popupHeight' => 480,
         ];
     }
+    
     /**
      * @inheritdoc
      */

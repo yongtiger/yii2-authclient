@@ -59,6 +59,7 @@ use yii\authclient\OAuth2;
  * ```
  *
  * getUserAttributes():
+ *
  * ```php
     Array
     (

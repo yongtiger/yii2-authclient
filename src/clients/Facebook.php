@@ -50,7 +50,7 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  * @see http://www.yiiframework.com/doc-2.0/yii-authclient-clients-facebook.html
-
+ *
  * [EXAMPLE JSON RESPONSE BODY FOR GET]
  * 
  * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
@@ -164,5 +164,4 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
             'linkUrl' => 'link',
         ];
     }
-    
 }

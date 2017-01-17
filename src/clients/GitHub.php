@@ -180,7 +180,7 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
                     foreach ($emails as $email) {
                         if ($email['primary'] == 1 && $email['verified'] == 1) {
                             $this->setUserAttributes(array_merge($this->getUserAttributes(), ['email' => $email['email']]));
-                            return $this->getUserAttributes()[$attribute];
+                            return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
                         }
                     }
                 }

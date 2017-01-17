@@ -56,7 +56,7 @@ namespace yongtiger\authclient\clients;
  * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
  *
  * ```
- *  { "kind": "plus#person", "etag": "\"FT7X6cYw9BSnPtIywEFNNGVVdio/
+ * { "kind": "plus#person", "etag": "\"FT7X6cYw9BSnPtIywEFNNGVVdio/
  m83Ca7xVMoDVrGZ6EOj8pdlzKbM\"", "emails": [ { "value": "service.brainbook.cc@gmail.com", "type": 
  "account" } ], "objectType": "person", "id": "113544724474573231306", "displayName": "service 
  brainbook", "name": { "familyName": "brainbook", "givenName": "service" }, "image": { "url": "https://
@@ -64,8 +64,9 @@ namespace yongtiger\authclient\clients;
  sz=50", "isDefault": true }, "isPlusUser": false, "language": "zh_CN", "verified": false }
  * ```
  *
- * `getUserAttributes()`:
+ * getUserAttributes():
  *
+ * ```php
     Array
     (
         [kind] => plus#person
