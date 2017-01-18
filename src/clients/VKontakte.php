@@ -19,6 +19,8 @@ use yii\authclient\OAuth2;
  *
  * In order to use VKontakte OAuth2 you must register your application at <http://vk.com/editapp?act=create>.
  *
+ * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ *
  * Example application configuration:
  *
  * ```php
@@ -37,97 +39,95 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
+ * [EXAMPLE JSON RESPONSE BODY FOR GET]
+ * 
+ * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
+ *
+ * ```
+ *  {"response":[{"uid": 407891976,"first_name":"Tiger","last_name":"Yong","sex": 2,"nickname":"","screen_name":"id407891976","bdate":"9.1.1971","city":0,"country":0,"timezone": 8,"photo":"http:\/\/vk.com\/images\/camera_50.png"}]}
+ * ```
+ *
+ * getUserAttributes():
+ *
+ * ```php
+    Array
+    (
+        [user_id] => 407891976
+        [uid] => 407891976
+        [first_name] => Tiger
+        [last_name] => Yong
+        [sex] => 2
+        [nickname] => 
+        [screen_name] => id407891976
+        [bdate] => 9.1.1971
+        [city] => 0
+        [country] => 0
+        [timezone] => 8
+        [photo] => http://vk.com/images/camera_50.png
+        [openid] => 407891976
+        [fullname] => Tiger Yong
+        [firstname] => Tiger
+        [lastname] => Yong
+        [gender] => 1
+        [avatarUrl] => http://vk.com/images/camera_50.png
+        [linkUrl] => https://vk.com/id407891976
+    )
+ * ```
+ *
+ * [REFERENCES]
+ *
  * @see http://vk.com/editapp?act=create
  * @see http://vk.com/developers.php?oid=-1&p=users.get
+ * @see https://vk.com/dev/manuals
  */
-class VKontakte \yii\authclient\clients\VKontakte implements IAuth
+class VKontakte extends \yii\authclient\clients\VKontakte implements IAuth
 {
-    /**
-     * @inheritdoc
-     */
-    public $authUrl = 'https://oauth.vk.com/authorize';
-    /**
-     * @inheritdoc
-     */
-    public $tokenUrl = 'https://oauth.vk.com/access_token';
-    /**
-     * @inheritdoc
-     */
-    public $apiBaseUrl = 'https://api.vk.com/method';
-    /**
-     * @var array list of attribute names, which should be requested from API to initialize user attributes.
-     * @since 2.0.4
-     */
-    public $attributeNames = [
-        'uid',
-        'first_name',
-        'last_name',
-        'nickname',
-        'screen_name',
-        'sex',
-        'bdate',
-        'city',
-        'country',
-        'timezone',
-        'photo'
-    ];
-
+    use ClientTrait;
 
     /**
      * @inheritdoc
      */
-    protected function initUserAttributes()
-    {
-        $response = $this->api('users.get.json', 'GET', [
-            'fields' => implode(',', $this->attributeNames),
-        ]);
-        $attributes = array_shift($response['response']);
-
-        $accessToken = $this->getAccessToken();
-        if (is_object($accessToken)) {
-            $accessTokenParams = $accessToken->getParams();
-            unset($accessTokenParams['access_token']);
-            unset($accessTokenParams['expires_in']);
-            $attributes = array_merge($accessTokenParams, $attributes);
-        }
-
-        return $attributes;
-    }
-
-    /**
-     * @inheritdoc
-     */
-    public function applyAccessTokenToRequest($request, $accessToken)
-    {
-        $data = $request->getData();
-        $data['uids'] = $accessToken->getParam('user_id');
-        $data['access_token'] = $accessToken->getToken();
-        $request->setData($data);
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defaultName()
-    {
-        return 'vkontakte';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defaultTitle()
-    {
-        return 'VKontakte';
-    }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defaultNormalizeUserAttributeMap()
-    {
+    protected function defaultViewOptions() {
         return [
-            'id' => 'uid'
+            'popupWidth' => 760,
+            'popupHeight' => 560,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'openid' => 'uid',
+
+            'email' => function ($attributes) {
+                return $this->getAccessToken()->getParam('email');
+            },
+
+            ///VKontakte register a new account with Email instead of username, also needed first name and last name.
+            ///So we generate the fullname with givenName and familyName, 
+            ///according to the above `EXAMPLE JSON RESPONSE BODY FOR GET`: `[givenName] => Tiger` and `[familyName] => Yong`.
+            'fullname' => function ($attributes) {
+                if (!isset($attributes['first_name']) || !isset($attributes['last_name'])) return null;
+                return $attributes['first_name'] . ' ' . $attributes['last_name'];
+            },
+
+            'firstname' => 'first_name',
+
+            'lastname' => 'last_name',
+
+            'gender' => function ($attributes) {
+                if (!isset($attributes['sex'])) return null;
+                return $attributes['sex'] == '2' ? static::GENDER_MALE : ($attributes['sex'] == '1' ? static::GENDER_FEMALE : null);
+            },
+
+            'avatarUrl' => 'photo',
+
+            'linkUrl' => function ($attributes) {
+                if (!isset($attributes['screen_name'])) return null;
+                return 'https://vk.com/' . $attributes['screen_name'];
+            },
         ];
     }
 }

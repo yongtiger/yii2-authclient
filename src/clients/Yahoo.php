@@ -313,5 +313,4 @@ class Yahoo extends OAuth2 implements IAuth
 
         return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
     }
-
 }

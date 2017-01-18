@@ -37,10 +37,121 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
+Array
+(
+    [id] => 5551861170
+    [idstr] => 5551861170
+    [class] => 1
+    [screen_name] => 老虎杨光
+    [name] => 老虎杨光
+    [province] => 11
+    [city] => 2
+    [location] => 北京 西城区
+    [description] => 
+    [url] => 
+    [profile_image_url] => http://tva3.sinaimg.cn/default/images/default_avatar_male_50.gif
+    [cover_image_phone] => http://ww1.sinaimg.cn/crop.0.0.640.640.640/549d0121tw1egm1kjly3jj20hs0hsq4f.jpg
+    [profile_url] => u/5551861170
+    [domain] => 
+    [weihao] => 
+    [gender] => m
+    [followers_count] => 2
+    [friends_count] => 33
+    [pagefriends_count] => 1
+    [statuses_count] => 9
+    [favourites_count] => 0
+    [created_at] => Thu Mar 12 20:57:07 +0800 2015
+    [following] => 
+    [allow_all_act_msg] => 
+    [geo_enabled] => 1
+    [verified] => 
+    [verified_type] => -1
+    [remark] => 
+    [insecurity] => Array
+        (
+            [sexual_content] => 
+        )
+
+    [status] => Array
+        (
+            [created_at] => Tue Apr 19 01:46:20 +0800 2016
+            [id] => 3.9657904218841E+15
+            [mid] => 3965790421884069
+            [idstr] => 3965790421884069
+            [text] => 每位公益车APP立足于公益平台，以全免费的服务，为广大热心的网民，提供互助拼车、空闲车位、共享充电桩等公益互助服务，最大限度利用公共资源、节能环保、减少社会压力与矛盾。；体验地址：http://t.cn/RqKzNDE
+            [textLength] => 196
+            [source_allowclick] => 0
+            [source_type] => 1
+            [source] => 每位公益车
+            [favorited] => 
+            [truncated] => 
+            [in_reply_to_status_id] => 
+            [in_reply_to_user_id] => 
+            [in_reply_to_screen_name] => 
+            [pic_urls] => Array
+                (
+                )
+
+            [geo] => 
+            [reposts_count] => 0
+            [comments_count] => 0
+            [attitudes_count] => 0
+            [isLongText] => 
+            [mlevel] => 0
+            [visible] => Array
+                (
+                    [type] => 0
+                    [list_id] => 0
+                )
+
+            [biz_feature] => 0
+            [hasActionTypeCard] => 0
+            [darwin_tags] => Array
+                (
+                )
+
+            [hot_weibo_tags] => Array
+                (
+                )
+
+            [text_tag_tips] => Array
+                (
+                )
+
+            [userType] => 0
+            [positive_recom_flag] => 0
+            [gif_ids] => 
+            [is_show_bulletin] => 0
+        )
+
+    [ptype] => 0
+    [allow_all_comment] => 1
+    [avatar_large] => http://tva3.sinaimg.cn/default/images/default_avatar_male_180.gif
+    [avatar_hd] => http://tva3.sinaimg.cn/default/images/default_avatar_male_180.gif
+    [verified_reason] => 
+    [verified_trade] => 
+    [verified_reason_url] => 
+    [verified_source] => 
+    [verified_source_url] => 
+    [follow_me] => 
+    [online_status] => 0
+    [bi_followers_count] => 0
+    [lang] => zh-cn
+    [star] => 0
+    [mbtype] => 0
+    [mbrank] => 0
+    [block_word] => 0
+    [block_app] => 0
+    [credit_score] => 80
+    [user_ability] => 0
+    [urank] => 4
+)
  * @see https://developer.weibo.com/
  */
 class Weibo extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     public $authUrl = 'https://api.weibo.com/oauth2/authorize';
     public $tokenUrl = 'https://api.weibo.com/oauth2/access_token';
     public $apiBaseUrl = 'https://api.weibo.com';

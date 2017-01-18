@@ -44,8 +44,6 @@ use yii\helpers\Json;
  */
 class Qq extends OAuth2 implements IAuth
 {
-    use ClientTrait;
-
     public $authUrl = 'https://graph.qq.com/oauth2.0/authorize';
     public $tokenUrl = 'https://graph.qq.com/oauth2.0/token';
     public $apiBaseUrl = 'https://graph.qq.com';

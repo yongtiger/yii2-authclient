@@ -41,6 +41,8 @@ use yii\authclient\OAuth2;
  */
 class Weixin extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     public $authUrl    = 'https://open.weixin.qq.com/connect/qrconnect';
     public $tokenUrl   = 'https://api.weixin.qq.com/sns/oauth2/access_token';
     public $apiBaseUrl = 'https://api.weixin.qq.com';
@@ -109,10 +111,10 @@ class Weixin extends OAuth2 implements IAuth
      * @return []
      * @see    http://open.weibo.com/wiki/2/users/show
      */
-    public function getUserInfo()
-    {
-        return $this->getUserAttributes();
-    }
+    // public function getUserInfo()
+    // {
+    //     return $this->getUserAttributes();
+    // }
     protected function defaultName()
     {
         return 'weixin';

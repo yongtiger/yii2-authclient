@@ -13,16 +13,20 @@
 namespace yongtiger\authclient\clients;
 
 use yii\authclient\OAuth2;
-use yii\authclient\OAuthToken;
-use yii\helpers\ArrayHelper;
-use yii\helpers\Url;
 use yii\web\HttpException;
 
 /**
  * Amazon OAuth2
  *
- * In order to use Amazon OAuth2 you must register your application at <https://developer.yahoo.com>.
+ * In order to use Amazon OAuth2 you must register your application at <http://login.amazon.com/manageApps>.
  *
+ * Note: The redirect URI for web apps and services must begin with the scheme `https`. That means you cannot use `localhost` or `127.0.0.1` for testing!
+ *
+ * Sample `Callback URL`: 
+ * `https://yourdomain/1_oauth/frontend/web/index.php/site/auth?authclient=amazon` (OK)
+ * `https://yourdomain/1_oauth/frontend/web/index.php?r=site/auth` (WRONG!)
+ * `https://yourdomain/1_oauth/frontend/web/index.php?r=site/auth&authclient=amazon` (WRONG!)
+ * 
  * Example application configuration:
  *
  * ```php
@@ -41,11 +45,64 @@ use yii\web\HttpException;
  * ]
  * ```
  *
- * @see https://developer.yahoo.com
+ *
+ * [EXAMPLE JSON RESPONSE BODY FOR GET]
+ * 
+ * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
+ *
+ * ```
+ * {"name":"Tiger Yong","email":"tigeryang.brainbook
+ \u0040outlook.com","first_name":"Tiger","last_name":"Yong","picture":{"data":
+ {"is_silhouette":true,"url":"https:\/\/scontent.xx.fbcdn.net\/v\/t1.0-1\/c15.0.50.50\/p50x50\/
+ 10354686_10150004552801856_220367501106153455_n.jpg?
+ oh=978df650af5b925f321fe4050af2869f&oe=5911542F"}},"gender":"male","age_range":{"min":
+ 21},"link":"https:\/\/www.facebook.com\/app_scoped_user_id\/
+ 123618604810465\/","locale":"en_US","timezone":
+ 8,"updated_time":"2017-01-13T21:40:58+0000","verified":true,"id":"123618604810465"}
+ * ```
+ *
+ * getUserAttributes():
+ *
+ * ```php
+    Array
+    (
+        [aud] => amzn1.application-oa2-client.c3b583b90a274981a36d53f47234f111
+        [user_id] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
+        [iss] => https://www.amazon.com
+        [exp] => 3599
+        [app_id] => amzn1.application.d65c23fdd3c64214bafc7a604820ffe9
+        [iat] => 1484707047
+        [openid] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
+    )
+ * ```
+ *
+ * getUserInfo($attribute):
+ *
+ * ```php
+    Array
+    (
+        [aud] => amzn1.application-oa2-client.c3b583b90a274981a36d53f47234f111
+        [user_id] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
+        [iss] => https://www.amazon.com
+        [exp] => 3599
+        [app_id] => amzn1.application.d65c23fdd3c64214bafc7a604820ffe9
+        [iat] => 1484707359
+        [openid] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
+        [name] => yongtiger
+        [email] => tigeryang.brainbook@outlook.com
+        [fullname] => yongtiger
+    )
+ * ```
+ *
+ * [REFERENCES]
+ *
+ * @see http://login.amazon.com/website
  * @see https://images-na.ssl-images-amazon.com/images/G/01/lwa/dev/docs/website-developer-guide._TTH_.pdf
  */
 class Amazon extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     public $authUrl = 'https://www.amazon.com/ap/oa';
     public $tokenUrl = 'https://api.amazon.com/auth/o2/token';
     public $apiBaseUrl = 'https://api.amazon.com';
@@ -125,22 +182,8 @@ class Amazon extends OAuth2 implements IAuth
     {
         return $this->api('/auth/O2/tokeninfo');
     }
-    /**
-     * get UserInfo
-     * @return array
-     */
-    public function getUserInfo()
-    {
-        return $this->api("/user/profile");
-    }
-    /**
-     * @return string
-     */
-    public function getOpenid()
-    {
-        $attributes = $this->getUserAttributes();
-        return ArrayHelper::getValue($attributes, 'user_id');
-    }
+
+
     protected function defaultName()
     {
         return 'amazon';
@@ -148,5 +191,54 @@ class Amazon extends OAuth2 implements IAuth
     protected function defaultTitle()
     {
         return 'Amazon';
+    }
+
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultViewOptions() {
+        return [
+            'popupWidth' => 800,
+            'popupHeight' => 600,
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'openid' => 'user_id',
+        ];
+    }
+
+    /**
+     * Proflie Normalize User Attribute Map
+     *
+     * @return array
+     */
+    protected function profileNormalizeUserAttributeMap() {
+        return [
+            'fullname' => 'name',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function getUserInfo($attribute)
+    {
+        if (isset($this->getUserAttributes()[$attribute])) {
+            return $this->getUserAttributes()[$attribute];
+        }
+
+        ///Get extra user info: profile
+        $this->setNormalizeUserAttributeMap($this->profileNormalizeUserAttributeMap());
+        $profile = $this->api('/user/profile');
+        $attributes = $this->normalizeUserAttributes($profile);
+        $this->setUserAttributes(array_merge($this->getUserAttributes(), $attributes));
+
+        return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
     }
 }
