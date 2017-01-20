@@ -15,11 +15,12 @@ namespace yongtiger\authclient\clients;
 /**
  * GitHub OAuth2
  *
- * In order to use GitHub OAuth2 you must register your application at <https://github.com/settings/applications/new> in your Github account.
+ * In order to use GitHub OAuth2 you must register your application at <https://github.com/settings/applications/new>.
  *
  * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`:
+ *
  * `http://localhost/1_oauth/frontend/web/index.php?r=site/auth` (OK)
  * `http://localhost/1_oauth/frontend/web/index.php?r=site%2Fauth` (OK)
  * `http://localhost/1_oauth/frontend/web/index.php?r=site/auth&authclient=github` (OK)
@@ -30,6 +31,16 @@ namespace yongtiger\authclient\clients;
  * `http://localhost/1_oauth/frontend/web/?r=site/auth&authclient=github` (OK)
  * `http://localhost/1_oauth/frontend/web/?r=site%2Fauth&authclient=github` (OK)
  * `http://localhost/1_oauth/frontend/web/?r=site%2Fauth%26authclient=github` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site/auth` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site%2Fauth` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site/auth&authclient=github` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site%2Fauth&authclient=github` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site%2Fauth%26authclient=github` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/?r=site/auth` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/?r=site%2Fauth` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/?r=site/auth&authclient=github` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/?r=site%2Fauth&authclient=github` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/?r=site%2Fauth%26authclient=github` (WRONG!)
  *
  * Example application configuration:
  *
@@ -50,73 +61,136 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  *
- * [EXAMPLE JSON RESPONSE BODY FOR GET]
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
  *
- * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
+ * [EXAMPLE RESPONSE]
+ *
+ * Authorization URL:
  *
  * ```
- * {"login": "magicdict",  "id": 897796,  "avatar_url": "https://avatars.githubusercontent.com/u/897796?v=3",  "gravatar_id": "",  "url": "https://api.github.com/users/magicdict",  "html_url": "https://github.com/magicdict",  "followers_url": "https://api.github.com/users/magicdict/followers",  "following_url": "https://api.github.com/users/magicdict/following{/other_user}",  "gists_url": "https://api.github.com/users/magicdict/gists{/gist_id}",  "starred_url": "https://api.github.com/users/magicdict/starred{/owner}{/repo}",  "subscriptions_url": "https://api.github.com/users/magicdict/subscriptions",  "organizations_url": "https://api.github.com/users/magicdict/orgs",  "repos_url": "https://api.github.com/users/magicdict/repos",  "events_url": "https://api.github.com/users/magicdict/events{/privacy}",  "received_events_url": "https://api.github.com/users/magicdict/received_events",  "type": "User",  "site_admin": false,  "name": "MagicHu",  "company": "Shanghai Chuwa software co.ltd",  "blog": "http://www.mywechatapp.com",  "location": "Shanghai,China",  "email": "mynightelfplayer@hotmail.com",  "hireable": true,  "bio": null,  "public_repos": 7,  "public_gists": 0,  "followers": 50,  "following": 2,  "created_at": "2011-07-06T09:26:40Z",  "updated_at": "2016-02-06T09:09:34Z"}
+ * https://github.com/login?client_id=d9bf109efa527c68d1a7&return_to=%2Flogin%2Foauth%2Fauthorize%3Fclient_id%3Dd9bf109efa527c68d1a7%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%252F1_oauth%252Ffrontend%252Fweb%252Findex.php%253Fr%253Dsite%25252Fauth%2526authclient%253Dgithub%26response_type%3Dcode%26scope%3Duser%26state%3Dbaeacf933b962687951a1b0c29beeab701f876e6e1c3a6f12d96e7e413f77329%26xoauth_displayname%3DMy%2BApplication
  * ```
  *
- * getUserAttributes():
+ * AccessToken Request:
+ *
+ * ```
+ * https://github.com/login/oauth/access_token
+ * ```
+ *
+ * AccessToken Response:
+ *
+ * ```
+ * access_token=75bc70ac70976c5144b483f0bc1c2f97ec167fda&scope=user&token_type=bearer
+ * ```
+ *
+ * Request of `initUserAttributes()`:
+ *
+ * ```
+ * https://api.github.com/user?access_token=75bc70ac70976c5144b483f0bc1c2f97ec167fda
+ * ```
+ *
+ * Response of `initUserAttributes()`:
+ *
+ * ```
+ * {"login":"yongtiger","id":19513015,"avatar_url":"https://avatars.githubusercontent.com/u/19513015?v=3","gravatar_id":"","url":"https://api.github.com/users/yongtiger","html_url":"https://github.com/yongtiger","followers_url":"https://api.github.com/users/yongtiger/followers","following_url":"https://api.github.com/users/yongtiger/following{/other_user}","gists_url":"https://api.github.com/users/yongtiger/gists{/gist_id}","starred_url":"https://api.github.com/users/yongtiger/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/yongtiger/subscriptions","organizations_url":"https://api.github.com/users/yongtiger/orgs","repos_url":"https://api.github.com/users/yongtiger/repos","events_url":"https://api.github.com/users/yongtiger/events{/privacy}","received_events_url":"https://api.github.com/users/yongtiger/received_events","type":"User","site_admin":false,"name":null,"company":null,"blog":null,"location":null,"email":null,"hireable":null,"bio":null,"public_repos":3,"public_gists":0,"followers":0,"following":0,"created_at":"2016-05-22T05:26:43Z","updated_at":"2017-01-19T04:26:59Z","private_gists":0,"total_private_repos":0,"owned_private_repos":0,"disk_usage":326,"collaborators":0,"plan":{"name":"free","space":976562499,"collaborators":0,"private_repos":0}}
+ * ```
  *
  * ```php
-    Array
-    (
-        [login] => yongtiger
-        [id] => 19513015
-        [avatar_url] => https://avatars.githubusercontent.com/u/19513015?v=3
-        [gravatar_id] => 
-        [url] => https://api.github.com/users/yongtiger
-        [html_url] => https://github.com/yongtiger
-        [followers_url] => https://api.github.com/users/yongtiger/followers
-        [following_url] => https://api.github.com/users/yongtiger/following{/other_user}
-        [gists_url] => https://api.github.com/users/yongtiger/gists{/gist_id}
-        [starred_url] => https://api.github.com/users/yongtiger/starred{/owner}{/repo}
-        [subscriptions_url] => https://api.github.com/users/yongtiger/subscriptions
-        [organizations_url] => https://api.github.com/users/yongtiger/orgs
-        [repos_url] => https://api.github.com/users/yongtiger/repos
-        [events_url] => https://api.github.com/users/yongtiger/events{/privacy}
-        [received_events_url] => https://api.github.com/users/yongtiger/received_events
-        [type] => User
-        [site_admin] => 
-        [name] => 
-        [company] => 
-        [blog] => 
-        [location] => 
-        [email] => 
-        [hireable] => 
-        [bio] => 
-        [public_repos] => 3
-        [public_gists] => 0
-        [followers] => 0
-        [following] => 0
-        [created_at] => 2016-05-22T05:26:43Z
-        [updated_at] => 2016-12-06T04:10:27Z
-        [private_gists] => 0
-        [total_private_repos] => 0
-        [owned_private_repos] => 0
-        [disk_usage] => 295
-        [collaborators] => 0
-        [plan] => Array
-            (
-                [name] => free
-                [space] => 976562499
-                [collaborators] => 0
-                [private_repos] => 0
-            )
-
-        [openid] => 19513015
-        [fullname] => yongtiger
-        [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
-        [linkUrl] => https://api.github.com/users/yongtiger
-    )
+ * Array
+ * (
+ *     [login] => yongtiger
+ *     [id] => 19513015
+ *     [avatar_url] => https://avatars.githubusercontent.com/u/19513015?v=3
+ *     [gravatar_id] => 
+ *     [url] => https://api.github.com/users/yongtiger
+ *     [html_url] => https://github.com/yongtiger
+ *     [followers_url] => https://api.github.com/users/yongtiger/followers
+ *     [following_url] => https://api.github.com/users/yongtiger/following{/other_user}
+ *     [gists_url] => https://api.github.com/users/yongtiger/gists{/gist_id}
+ *     [starred_url] => https://api.github.com/users/yongtiger/starred{/owner}{/repo}
+ *     [subscriptions_url] => https://api.github.com/users/yongtiger/subscriptions
+ *     [organizations_url] => https://api.github.com/users/yongtiger/orgs
+ *     [repos_url] => https://api.github.com/users/yongtiger/repos
+ *     [events_url] => https://api.github.com/users/yongtiger/events{/privacy}
+ *     [received_events_url] => https://api.github.com/users/yongtiger/received_events
+ *     [type] => User
+ *     [site_admin] => 
+ *     [name] => 
+ *     [company] => 
+ *     [blog] => 
+ *     [location] => 
+ *     [email] => 
+ *     [hireable] => 
+ *     [bio] => 
+ *     [public_repos] => 3
+ *     [public_gists] => 0
+ *     [followers] => 0
+ *     [following] => 0
+ *     [created_at] => 2016-05-22T05:26:43Z
+ *     [updated_at] => 2017-01-19T04:26:59Z
+ *     [private_gists] => 0
+ *     [total_private_repos] => 0
+ *     [owned_private_repos] => 0
+ *     [disk_usage] => 326
+ *     [collaborators] => 0
+ *     [openid] => 19513015
+ *     [fullname] => yongtiger
+ *     [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
+ *     [linkUrl] => https://api.github.com/users/yongtiger
+ * )
  * ```
  *
- * Get extra user info: email
+ * Request of `initUserInfoAttributes()`:
+ *
+ * ```
+ * https://api.github.com/user/emails?access_token=75bc70ac70976c5144b483f0bc1c2f97ec167fda
+ * ```
+ *
+ * Response of `initUserInfoAttributes()`:
+ *
+ * ```
+ * [{"email":"3196127698@qq.com","primary":true,"verified":true},{"email":"tigeryang.brainbook@outlook.com","primary":false,"verified":true}]
+ * ```
  *
  * ```php
- * echo $client->email;
+ * Array
+ *     (
+ *         [0] => Array
+ *             (
+ *                 [email] => 3196127698@qq.com
+ *                 [primary] => 1
+ *                 [verified] => 1
+ *             )
+ * 
+ *         [1] => Array
+ *             (
+ *                 [email] => tigeryang.brainbook@outlook.com
+ *                 [primary] => 
+ *                 [verified] => 1
+ *             )
+ * 
+ *     )
  * ```
  *
  * [REFERENCES]
@@ -144,17 +218,37 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
     protected function defaultNormalizeUserAttributeMap() {
         return [
             'openid' => 'id',
-
             'fullname' => 'login',
-
             'avatarUrl' => 'avatar_url',
-
             'linkUrl' => 'url',
         ];
     }
 
     /**
-     * @inheritdoc
+     * Normalize user info attribute map.
+     *
+     * @return array
+     */
+    protected function userInfoNormalizeUserAttributeMap() {
+        return [
+            'email' => function ($attributes) {
+                $emails = $attributes['emails'];
+                if (!empty($emails)) {
+                    foreach ($emails as $email) {
+                        if ($email['primary'] == 1 && $email['verified'] == 1) {
+                            return $email['email'];
+                        }
+                    }
+                }
+                return null;
+            },
+        ];
+    }
+
+    /**
+     * Get user openid and other basic information.
+     *
+     * @return array
      */
     protected function initUserAttributes()
     {
@@ -162,32 +256,12 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
     }
 
     /**
-     * @inheritdoc
+     * Get extra user info.
+     *
+     * @return array
      */
-    public function getUserInfo($attribute)
+    protected function initUserInfoAttributes()
     {
-        if (isset($this->getUserAttributes()[$attribute])) {
-            return $this->getUserAttributes()[$attribute];
-        }
-
-        ///Get extra user info: email
-        if($attribute == 'email'){
-            // in case user set 'Keep my email address private' in GitHub profile, email should be retrieved via extra API request
-            $scopes = explode(' ', $this->scope);
-            if (in_array('user:email', $scopes, true) || in_array('user', $scopes, true)) {
-                $emails = $this->api('user/emails', 'GET');
-                if (!empty($emails)) {
-                    foreach ($emails as $email) {
-                        if ($email['primary'] == 1 && $email['verified'] == 1) {
-                            $this->setUserAttributes(array_merge($this->getUserAttributes(), ['email' => $email['email']]));
-                            return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
-                        }
-                    }
-                }
-            }
-        }
-
-        return null;
+        return ['emails' => $this->api('user/emails', 'GET')];
     }
-
 }

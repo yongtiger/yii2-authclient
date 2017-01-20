@@ -39,32 +39,73 @@ use Yii;
  * ]
  * ```
  *
- * [EXAMPLE JSON RESPONSE BODY FOR GET]
- * 
- * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
+ * [EXAMPLE RESPONSE]
+ *
+ * Authorization URL:
  *
  * ```
- * <?xml version="1.0" encoding="UTF-8" standalone="yes"?>  <person> <id>09EXzPLzAo</id> <email-address>tigeryang.brainbook@outlook.com</email- address> <first-name>光</first-name> <last-name>杨</last-name> <formatted-name>杨光 (tiger  yong)</formatted-name> <public-profile-url>https://www.linkedin.com/in/%E5%85%89-%E6%9D %A8-a91147133</public-profile-url> </person>
+ * https://www.linkedin.com/uas/oauth2/authorization?client_id=86ehrtbhkko1tl&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2F1_oauth%2Ffrontend%2Fweb%2Findex.php%3Fr%3Dsite%252Fauth%26authclient%3Dlinkedin&xoauth_displayname=My%20Application&scope=r_basicprofile%20r_emailaddress&state=c7affe27726abdef978ae0e766e41edd944316eee3136de4182ad3be0379ea79
  * ```
  *
- * getUserAttributes():
+ * AccessToken Request:
+ *
+ * ```
+ * https://www.linkedin.com/uas/oauth2/accessToken
+ * ```
+ *
+ * AccessToken Response:
+ *
+ * ```
+ * {"access_token":"AQV0koY9kljbhrR3JhNyfXiEYkg_RakRi7nqUnuh9TNvc8wXJ3Uv6CRfzmcJzi4PT54iksff2JPKta4Rjk7byX65tAJX_OpRcp0UeKOrHkVPuMT-66E3yXmZD1hkAwjovadrTr6G-RGErJ1clbASd1HwMwUbN6CqBnSzknc8zSn-h_MTfQo","expires_in":5183999}
+ * ```
+ *
+ * Request of `initUserAttributes()`:
+ *
+ * ```
+ * https://api.linkedin.com/v1/people/~:(id,email-address,first-name,last-name,formatted-name,phonetic-first-name,phonetic-last-name,formatted-phonetic-name,public-profile-url,picture-url)?oauth2_access_token=AQV0koY9kljbhrR3JhNyfXiEYkg_RakRi7nqUnuh9TNvc8wXJ3Uv6CRfzmcJzi4PT54iksff2JPKta4Rjk7byX65tAJX_OpRcp0UeKOrHkVPuMT-66E3yXmZD1hkAwjovadrTr6G-RGErJ1clbASd1HwMwUbN6CqBnSzknc8zSn-h_MTfQo
+ * ```
+ *
+ * Response of `initUserAttributes()`:
+ *
+ * ```
+ * <?xml version="1.0" encoding="UTF-8" standalone="yes"?> <person> <id>09EXzPLzAo</id> <email-address>tigeryang.brainbook@outlook.com</email-address> <first-name>光</first-name> <last-name>杨</last-name> <formatted-name>杨光 (tiger yong)</formatted-name> <public-profile-url>https://www.linkedin.com/in/%E5%85%89-%E6%9D%A8-a91147133</public-profile-url> </person>
+ * ```
  *
  * ```php
-    Array
-    (
-        [id] => 09EXzPLzAo
-        [email-address] => tigeryang.brainbook@outlook.com
-        [first-name] => 光
-        [last-name] => 杨
-        [public-profile-url] => https://www.linkedin.com/in/%E5%85%89-%E6%9D%A8-a91147133
-        [formatted-name] => 杨光 (tiger yong)
-        [openid] => 09EXzPLzAo
-        [email] => tigeryang.brainbook@outlook.com
-        [fullname] => 杨光 (tiger yong)
-        [firstname] => 光
-        [lastname] => 杨
-        [linkUrl] => https://www.linkedin.com/in/%E5%85%89-%E6%9D%A8-a91147133
-    )
+ * Array
+ * (
+ *     [id] => ab30d9e58b344caa
+ *     [name] => tiger yang
+ *     [first_name] => tiger
+ *     [last_name] => yang
+ *     [link] => https://profile.live.com/
+ *     [birth_day] => 15
+ *     [birth_month] => 8
+ *     [birth_year] => 1970
+ *     [work] => Array
+ *         (
+ *         )
+ * 
+ *     [gender] => 
+ *     [emails] => Array
+ *         (
+ *             [preferred] => tigeryang.brainbook@outlook.com
+ *             [account] => tigeryang.brainbook@outlook.com
+ *             [personal] => 
+ *             [business] => 
+ *         )
+ * 
+ *     [locale] => zh_CN
+ *     [updated_time] => 2017-01-16T19:31:18+0000
+ *     [openid] => ab30d9e58b344caa
+ *     [email] => tigeryang.brainbook@outlook.com
+ *     [fullname] => tiger yang
+ *     [firstname] => tiger
+ *     [lastname] => yang
+ *     [language] => zh_CN
+ *     [avatarUrl] => https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large
+ *     [linkUrl] => https://profile.live.com/cid-ab30d9e58b344caa
+ * )
  * ```
  *
  * [REFERENCES]
@@ -94,19 +135,12 @@ class LinkedIn extends\yii\authclient\clients\LinkedIn implements IAuth
     protected function defaultNormalizeUserAttributeMap() {
         return [
             'openid' => 'id',
-
             'email' => 'email-address',
-
             'fullname' => 'formatted-name',
-
             'firstname' => 'first-name',
-
             'lastname' => 'last-name',
-
             'language' => 'lang',
-
             'avatarUrl' => 'picture-url',
-
             'linkUrl' => 'public-profile-url',
         ];
     }
@@ -125,7 +159,9 @@ class LinkedIn extends\yii\authclient\clients\LinkedIn implements IAuth
     ];
 
     /**
-     * @inheritdoc
+     * Get user openid and other basic information.
+     *
+     * @return array
      */
     protected function initUserAttributes()
     {

@@ -13,11 +13,30 @@
 namespace yongtiger\authclient\clients;
 
 use yii\authclient\OAuth2;
+use yii\base\Event;
+use yii\httpclient\Request;
 
 /**
  * Weixin OAuth2
  *
- * In order to use Weixin OAuth2 you must register your application at <https://developer.weixin.com>.
+ * In order to use Weixin OAuth2 you must register your application at <https://open.weixin.qq.com/>.
+ *
+ * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ *
+ * Sample `Callback URL`:
+ *
+ * `http://localhost` (OK)
+ * `http://localhost/1_oauth/frontend/web/index.php/site/auth` (WRONG!)
+ * `http://localhost/1_oauth/frontend/web/index.php/site/auth?authclient=weixin` (WRONG!)
+ * `http://localhost/1_oauth/frontend/web/index.php?r=site/auth` (WRONG!)
+ * `http://localhost/1_oauth/frontend/web/index.php` (WRONG!)
+ * `http://localhost/1_oauth/frontend/web` (WRONG!)
+ * `http://127.0.0.1` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php/site/auth` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php/site/auth?authclient=weixin` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php?r=site/auth` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web` (WRONG!)
  *
  * Example application configuration:
  *
@@ -30,6 +49,7 @@ use yii\authclient\OAuth2;
  *                 'class' => 'yii\authclient\clients\Weixin',
  *                 'clientId' => 'weixin_client_id',
  *                 'clientSecret' => 'weixin_client_secret',
+*                  ///'scope' => 'snsapi_login',
  *             ],
  *         ],
  *     ]
@@ -37,92 +57,132 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
- * @see https://developer.weixin.com/
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
+ *
+ * [EXAMPLE RESPONSE]
+ *
+ * Authorization URL:
+ *
+ * ```
+ * https://open.weixin.qq.com/connect/qrconnect?client_id=wx2634dbab565e2f27&response_type=code&redirect_uri=http%3A%2F%2Flocalhost%2F1_oauth%2Ffrontend%2Fweb%2Findex.php%3Fr%3Dsite%252Fauth%26authclient%3Dweixin&xoauth_displayname=My%20Application&scope=snsapi_login&state=b310de5e32721920cfe992b1b416658d88d763cc63f3e9c6 391216513e49c8c3
+ * ```
+ *
+ * AccessToken Request:
+ *
+ * ```
+ * https://api.weixin.qq.com/sns/oauth2/access_token
+ * ```
+ *
+ * AccessToken Response:
+ *
+ * ```
+ * {"access_token":"3vXAk2gh4sxg0oINBgGqphbb7qOYfJiV1tMwDIUWo7b-6v1bNYFTCuYw0ls-2dBfhecj6fRsoGAUJGD9Mp8YDFvC9zYsR8NQtCqANjohAYo","expires_in":7200,"refresh_token":"Cfp8Q-yWY5Vg9IZ84swJq8uAEaaL8qUZ2sAbxmfu1DmtGdda0TCqnlvjw86YXS16yVOmv88pp_l_arPZXTfYl3bB-gwUdYuHA7TNGOyBH5k","openid":"oZVESxPul-3TOXFgCZra0g45Ky2g","scope":"snsapi_login","unionid":"o4sFWs-RwG0zuImUmdaMmErLxKOo"}
+ * ```
+ *
+ * Request of `initUserAttributes()`:
+ *
+ * ```
+ * https://api.weixin.qq.com/sns/userinfo?openid=oZVESxPul-3TOXFgCZra0g45Ky2g&access_token=3vXAk2gh4sxg0oINBgGqphbb7qOYfJiV1tMwDIUWo7b-6v1bNYFTCuYw0ls-2dBfhecj6fRsoGAUJGD9Mp8YDFvC9zYsR8NQtCqANjohAYo
+ * ```
+ *
+ * Response of `initUserAttributes()`:
+ *
+ * ```
+ * {"openid":"oZVESxPul-3TOXFgCZra0g45Ky2g","nickname":"老虎","sex":1,"language":"zh_CN","city":"","province":"Beijing","country":"CN","headimgurl":"http:\/\/wx.qlogo.cn\/mmopen\/ajNVdqHZLLAjDp1pr7oRywzDAAQXbhV2iamDW2rGxFhjswg91Is913d3t7cNU5CH7De9AhPbh1pE98RqOic57Q5Q\/0","privilege":[],"unionid":"o4sFWs-RwG0zuImUmdaMmErLxKOo"}
+ * ```
+ *
+ * ```php
+ * Array
+ * (
+ *     [openid] => oZVESxPul-3TOXFgCZra0g45Ky2g
+ *     [nickname] => 老虎
+ *     [sex] => 1
+ *     [language] => zh_CN
+ *     [city] => 
+ *     [province] => Beijing
+ *     [country] => CN
+ *     [headimgurl] => http://wx.qlogo.cn/mmopen/ajNVdqHZLLAjDp1pr7oRywzDAAQXbhV2iamDW2rGxFhjswg91Is913d3t7cNU5CH7De9AhPbh1pE98RqOic57Q5Q/0
+ *     [privilege] => Array
+ *        (
+ *        )
+ * 
+ *    [unionid] => o4sFWs-RwG0zuImUmdaMmErLxKOo
+ *     [fullname] => 老虎
+ *     [gender] => 1
+ *     [avatarUrl] => http://wx.qlogo.cn/mmopen/ajNVdqHZLLAjDp1pr7oRywzDAAQXbhV2iamDW2rGxFhjswg91Is913d3t7cNU5CH7De9AhPbh1pE98RqOic57Q5Q/0
+ * )
+ * ```
+ *
+ * [REFERENCES]
+ *
+ * @see https://open.weixin.qq.com/
+ * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&id=open1419316505&token=3caf524ceaf969e25b0bf12ff39a5a192676635d
+ * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=doc&id=open1419316518&t=0.14920092844688204
  */
 class Weixin extends OAuth2 implements IAuth
 {
     use ClientTrait;
 
-    public $authUrl    = 'https://open.weixin.qq.com/connect/qrconnect';
-    public $tokenUrl   = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-    public $apiBaseUrl = 'https://api.weixin.qq.com';
-    public $scope      = 'snsapi_login';
-    public $openid     = null;
-    /**
-     * Composes user authorization URL.
-     *
-     * @param array $params additional auth GET params.
-     *
-     * @return string authorization URL.
-     */
-    public function buildAuthUrl(array $params = [])
-    {
-        $defaultParams = [
-            'appid'         => $this->clientId,
-            'response_type' => 'code',
-            'redirect_uri'  => $this->getReturnUrl(),
-        ];
-        if (!empty($this->scope)) {
-            $defaultParams['scope'] = $this->scope;
-        }
-        return $this->composeUrl($this->authUrl, array_merge($defaultParams, $params));
-    }
-    /**
-     * Fetches access token from authorization code.
-     *
-     * @param string $authCode authorization code, usually comes at $_GET['code'].
-     * @param array  $params   additional request params.
-     *
-     * @return OAuthToken access token.
-     */
-    public function fetchAccessToken($authCode, array $params = [])
-    {
-        $defaultParams = [
-            'appid'      => $this->clientId,
-            'secret'     => $this->clientSecret,
-            'code'       => $authCode,
-            'grant_type' => 'authorization_code',
-        ];
-        $response = $this->sendRequest('POST', $this->tokenUrl, array_merge($defaultParams, $params));
-        $this->openid = isset($response['openid']) ? $response['openid'] : null;
-        $token = $this->createToken(['params' => $response]);
-        $this->setAccessToken($token);
-        return $token;
-    }
     /**
      * @inheritdoc
      */
-    protected function apiInternal($accessToken, $url, $method, array $params, array $headers)
-    {
-        $params['access_token'] = $accessToken->getToken();
-        $params['openid'] = $this->openid;
-        return $this->sendRequest($method, $url, $params, $headers);
-    }
+    public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
+
     /**
-     * @return []
-     * @see    https://open.weixin.qq.com/cgi-bin/showdocument?action=doc&id=open1419316518&t=0.14920092844688204
+     * @inheritdoc
      */
-    protected function initUserAttributes()
-    {
-        return $this->api('sns/userinfo');
-    }
+    public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
+
     /**
-     * get UserInfo
-     * @return []
-     * @see    http://open.weibo.com/wiki/2/users/show
+     * @inheritdoc
      */
-    // public function getUserInfo()
-    // {
-    //     return $this->getUserAttributes();
-    // }
+    public $apiBaseUrl = 'https://api.weixin.qq.com';
+
+    /**
+     * @inheritdoc
+     */
+    public $scope = 'snsapi_login';
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultName()
     {
         return 'weixin';
     }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultTitle()
     {
-        return '微信登陆';
+        return 'Weixin';
     }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultViewOptions()
     {
         return [
@@ -130,726 +190,63 @@ class Weixin extends OAuth2 implements IAuth
             'popupHeight' => 500,
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    public function init()
+    {
+        parent::init();
+
+        ///Add `appid` and `secret` before send request.
+        if (isset($_GET['code'])) {
+            $clientInstance = &$this;
+            Event::on(Request::className(), Request::EVENT_BEFORE_SEND, function ($event) use ($clientInstance){
+                $request = $event->sender;
+                if ($request->url == $clientInstance->tokenUrl) {
+                    $request->addData(['appid' => $this->clientId, 'secret' => $this->clientSecret]);
+                }
+            });
+        }
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function buildAuthUrl(array $params = [])
+    {
+        $params = array_merge($params, ['appid' => $this->clientId]);   ///add `appid`.
+        return parent::buildAuthUrl($params);
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultNormalizeUserAttributeMap()
+    {
+        return [
+            'fullname' => 'nickname',
+            'gender' => 'sex',
+            'avatarUrl' => 'headimgurl',
+        ];
+    }
+
+    /**
+     * Get user openid and other basic information.
+     *
+     * @return array
+     */
+    protected function initUserAttributes()
+    {
+        return $this->api('sns/userinfo', 'GET');
+    }
+
+    /**
+     * @inheritdoc
+     */
+    public function beforeApiRequestSend($event)
+    {
+        $event->request->addData(['openid' => $this->accessToken->getParam('openid')]); ///add `openid`
+        parent::beforeApiRequestSend($event);
+    }
 }
-
-// <?php
-// namespace leap\oauth;
-// use yii\authclient\OAuth2;
-// use yii\web\HttpException;
-// class Weixin extends OAuth2
-// {
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-    
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-    
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-    
-//     /**
-//      * @inheritdoc
-//      */
-//     public function init()
-//     {
-//         parent::init();
-//         if ($this->scope === null) {
-//             $this->scope = 'snsapi_userinfo';
-//         }
-//     }
-    
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'secret' => $this->clientSecret,
-//             'code' => $authCode,
-//             'grant_type' => 'authorization_code',
-//         ];
-//         $request = $this->createRequest()
-//             ->setMethod('POST')
-//             ->setUrl($this->tokenUrl)
-//             ->setData(array_merge($defaultParams, $params));
-//         $response = $this->sendRequest($request);
-//         $token = $this->createToken(['params' => $response]);
-//         $this->setAccessToken($token);
-//         return $token;
-//     }
-    
-//     public function applyAccessTokenToRequest($request, $accessToken)
-//     {
-//         $data = $request->getData();
-//         $data['access_token'] = $accessToken->getToken();
-//         $data['openid'] = $accessToken->getParam('openid');
-//         $request->setData($data);
-//     }
-    
-//     public function initUserAttributes()
-//     {
-//         return $this->api('sns/userinfo', 'GET');
-//     }
-    
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return 'Weixin';
-//     }
-// }
-
-// <?php
-// namespace lulubin\oauth;
-// use Yii;
-// use yii\authclient\OAuth2;
-// use yii\authclient\OAuthToken;
-// use yii\base\Exception;
-// use yii\web\HttpException;
-// /**
-//  * Weixin OAuth
-//  * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=doc&id=open1419316505&t=0.1933593254077447
-//  */
-// class Weixin extends OAuth2
-// {
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-//     public $scope = 'snsapi_login';
-//     /**
-//      * Composes user authorization URL.
-//      * @param array $params additional auth GET params.
-//      * @return string authorization URL.
-//      */
-//     public function buildAuthUrl(array $params = [])
-//     {
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'response_type' => 'code',
-//             'redirect_uri' => $this->getReturnUrl(),
-//         ];
-//         if (!empty($this->scope)) {
-//             $defaultParams['scope'] = $this->scope;
-//         }
-//         if ($this->validateAuthState) {
-//             $authState = $this->generateAuthState();
-//             $this->setState('authState', $authState);
-//             $defaultParams['state'] = $authState;
-//         }
-//         return $this->composeUrl($this->authUrl, array_merge($defaultParams, $params));
-//     }
-//     /**
-//      * Fetches access token from authorization code.
-//      * @param string $authCode authorization code, usually comes at $_GET['code'].
-//      * @param array $params additional request params.
-//      * @return OAuthToken access token.
-//      * @throws HttpException on invalid auth state in case [[enableStateValidation]] is enabled.
-//      */
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         if ($this->validateAuthState) {
-//             $authState = $this->getState('authState');
-//             if (!isset($_REQUEST['state']) || empty($authState) || strcmp($_REQUEST['state'], $authState) !== 0) {
-//                 throw new HttpException(400, 'Invalid auth state parameter.');
-//             } else {
-//                 $this->removeState('authState');
-//             }
-//         }
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'secret' => $this->clientSecret,
-//             'code' => $authCode,
-//             'grant_type' => 'authorization_code',
-//             'redirect_uri' => $this->getReturnUrl(),
-//         ];
-//         $request = $this->createRequest()
-//             ->setMethod('POST')
-//             ->setUrl($this->tokenUrl)
-//             ->setData(array_merge($defaultParams, $params));
-//         $response = $this->sendRequest($request);
-//         $token = $this->createToken(['params' => $response]);
-//         $this->setAccessToken($token);
-//         return $token;
-//     }
-//     /**
-//      * Handles [[Request::EVENT_BEFORE_SEND]] event.
-//      * Applies [[accessToken]] to the request.
-//      * @param \yii\httpclient\RequestEvent $event event instance.
-//      * @throws Exception on invalid access token.
-//      * @since 2.1
-//      */
-//     public function beforeApiRequestSend($event)
-//     {
-//         $request = $event->request;
-//         $data = $request->getData();
-//         $data['openid'] = $this->getOpenid();
-//         $request->setData($data);
-//         parent::beforeApiRequestSend($event);
-//     }
-//     /**
-//      *
-//      * @return []
-//      * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=doc&id=open1419316518&t=0.14920092844688204
-//      */
-//     protected function initUserAttributes()
-//     {
-//         return $this->api('sns/userinfo');
-//     }
-//     protected function defaultName()
-//     {
-//         return 'Weixin';
-//     }
-//     protected function defaultTitle()
-//     {
-//         return 'Weixin';
-//     }
-// }
-
-// <?php
-// namespace yujiandong\authclient;
-// use yii\authclient\OAuth2;
-// use yii\web\HttpException;
-// use Yii;
-// /**
-//  * Weixin(Wechat) allows authentication via Weixin(Wechat) OAuth.
-//  *
-//  * In order to use Weixin(Wechat) OAuth you must register your application at <https://open.weixin.qq.com/> or <https://mp.weixin.qq.com/>.
-//  *
-//  * Example application configuration:
-//  *
-//  * ~~~
-//  * 'components' => [
-//  *     'authClientCollection' => [
-//  *         'class' => 'yii\authclient\Collection',
-//  *         'clients' => [
-//  *             'weixin' => [   // for account of https://open.weixin.qq.com/
-//  *                 'class' => 'yujiandong\authclient\Weixin',
-//  *                 'clientId' => 'weixin_appid',
-//  *                 'clientSecret' => 'weixin_appkey',
-//  *             ],
-//  *             'weixinmp' => [  // for account of https://mp.weixin.qq.com/
-//  *                 'class' => 'yujiandong\authclient\Weixin',
-//  *                 'type' => 'mp',
-//  *                 'clientId' => 'weixin_appid',
-//  *                 'clientSecret' => 'weixin_appkey',
-//  *             ],
-//  *         ],
-//  *     ]
-//  *     ...
-//  * ]
-//  * ~~~
-//  *
-//  * @see https://open.weixin.qq.com/
-//  * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&lang=zh_CN
-//  * @see https://mp.weixin.qq.com/
-//  * @see https://mp.weixin.qq.com/wiki?t=resource/res_main&id=mp1421140842&token=&lang=zh_CN
-//  *
-//  * @author Jiandong Yu <flyyjd@gmail.com>
-//  * @since 2.0
-//  */
-// class Weixin extends OAuth2
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-//     public $authUrlMp = 'https://open.weixin.qq.com/connect/oauth2/authorize';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-//     public $type = null;
-//     /**
-//      * @inheritdoc
-//      */
-//     public function init()
-//     {
-//         parent::init();
-//         if ($this->scope === null) {
-//             $this->scope = implode(',', [
-//                 'snsapi_userinfo',
-//             ]);
-//         }
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultNormalizeUserAttributeMap()
-//     {
-//         return [
-//             'id' => 'openid',
-//             'username' => 'nickname',
-//         ];
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function buildAuthUrl(array $params = [])
-//     {
-//         $authState = $this->generateAuthState();
-//         $this->setState('authState', $authState);
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'redirect_uri' => $this->getReturnUrl(),
-//             'response_type' => 'code',
-//         ];
-//         if (!empty($this->scope)) {
-//             $defaultParams['scope'] = $this->scope;
-//         }
-//         $defaultParams['state'] = $authState;
-//         $url = $this->type == 'mp'?$this->authUrlMp:$this->authUrl;
-//         return $this->composeUrl($url, array_merge($defaultParams, $params));
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         $authState = $this->getState('authState');
-//         if (!isset($_REQUEST['state']) || empty($authState) || strcmp($_REQUEST['state'], $authState) !== 0) {
-//             throw new HttpException(400, 'Invalid auth state parameter.');
-//         } else {
-//             $this->removeState('authState');
-//         }
-//         $params['appid'] = $this->clientId;
-//         $params['secret'] = $this->clientSecret;
-//         return parent::fetchAccessToken($authCode, $params);
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function apiInternal($accessToken, $url, $method, array $params, array $headers)
-//     {
-//         $params['access_token'] = $accessToken->getToken();
-//         $params['openid'] = $accessToken->getParam('openid');
-//         $params['lang'] = 'zh_CN';
-//         return $this->sendRequest($method, $url, $params, $headers);
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function initUserAttributes()
-//     {
-//         return $this->api('sns/userinfo');
-// //        $userAttributes['id'] = $userAttributes['unionid'];
-// //        return $userAttributes;
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultReturnUrl()
-//     {
-//         $params = $_GET;
-//         unset($params['code']);
-//         unset($params['state']);
-//         $params[0] = Yii::$app->controller->getRoute();
-//         return Yii::$app->getUrlManager()->createAbsoluteUrl($params);
-//     }
-//     /**
-//      * Generates the auth state value.
-//      * @return string auth state value.
-//      */
-//     protected function generateAuthState()
-//     {
-//         return sha1(uniqid(get_class($this), true));
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return 'Weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultViewOptions()
-//     {
-//         return [
-//             'popupWidth' => 800,
-//             'popupHeight' => 500,
-//         ];
-//     }
-// }
-
-// <?php
-// namespace lonelythinker\yii2\authclient\clients;
-// use yii\authclient\OAuth2;
-// use yii\web\HttpException;
-// use Yii;
-// /**
-//  * Weixin(Wechat) allows authentication via Weixin(Wechat) OAuth.
-//  *
-//  * In order to use Weixin(Wechat) OAuth you must register your application at <https://open.weixin.qq.com/>.
-//  *
-//  * Example application configuration:
-//  *
-//  * ~~~
-//  * 'components' => [
-//  *     'authClientCollection' => [
-//  *         'class' => 'yii\authclient\Collection',
-//  *         'clients' => [
-//  *             'weixin' => [   // for account of https://open.weixin.qq.com/
-//  *                 'class' => 'lonelythinker\yii2\authclient\Weixin',
-//  *                 'clientId' => 'weixin_appid',
-//  *                 'clientSecret' => 'weixin_appkey',
-//  *             ],
-//  *             'weixinmp' => [  // for account of https://mp.weixin.qq.com/
-//  *                 'class' => 'lonelythinker\yii2\authclient\Weixin',
-//  *                 'type' => 'mp',
-//  *                 'clientId' => 'weixin_appid',
-//  *                 'clientSecret' => 'weixin_appkey',
-//  *             ],
-//  *         ],
-//  *     ]
-//  *     ...
-//  * ]
-//  * ~~~
-//  *
-//  * @see https://open.weixin.qq.com/
-//  * @see https://open.weixin.qq.com/cgi-bin/showdocument?action=dir_list&t=resource/res_list&verify=1&lang=zh_CN
-//  *
-//  * @author : lonelythinker
-//  * @email : 710366112@qq.com
-//  * @homepage : www.lonelythinker.cn
-//  */
-// class Weixin extends OAuth2
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-//     public $authUrlMp = 'https://open.weixin.qq.com/connect/oauth2/authorize';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-//     public $type = null;
-//     public $validateAuthState = false;
-//     /**
-//      * @inheritdoc
-//      */
-//     public function init()
-//     {
-//         parent::init();
-//         if ($this->scope === null) {
-//             //$this->scope = implode(',', $this->type == 'mp' ? ['snsapi_userinfo',] : ['snsapi_login']);
-//             $this->scope = implode(',', ['snsapi_login']);
-//         }
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultNormalizeUserAttributeMap()
-//     {
-//         return [
-//             'id' => 'openid',
-//             'username' => 'nickname',
-//         ];
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function buildAuthUrl(array $params = [])
-//     {
-//         $authState = $this->generateAuthState();
-//         $this->setState('authState', $authState);
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'redirect_uri' => $this->getReturnUrl(),
-//             'response_type' => 'code',
-//         ];
-//         if (!empty($this->scope)) {
-//             $defaultParams['scope'] = $this->scope;
-//         }
-//         $defaultParams['state'] = $authState;
-//         $url = $this->type == 'mp'?$this->authUrlMp:$this->authUrl;
-//         return $this->composeUrl($url, array_merge($defaultParams, $params));
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         $authState = $this->getState('authState');
-//         // if (!isset($_REQUEST['state']) || empty($authState) || strcmp($_REQUEST['state'], $authState) !== 0) {
-//         //     throw new HttpException(400, 'Invalid auth state parameter.');
-//         // } else {
-//         //     $this->removeState('authState');
-//         // }
-//         $params['appid'] = $this->clientId;
-//         $params['secret'] = $this->clientSecret;
-//         return parent::fetchAccessToken($authCode, $params);
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function applyAccessTokenToRequest($request, $accessToken)
-//     {
-//         $data = $request->getData();
-//         $data['access_token'] = $accessToken->getToken();
-//         $data['openid'] = $accessToken->getParam('openid');
-//         $data['lang'] = 'zh_CN';
-//         $request->setData($data);
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function initUserAttributes()
-//     {
-//         $userAttributes = $this->api('sns/userinfo');
-        
-// //        $userAttributes['id'] = $userAttributes['unionid'];
-//         return $userAttributes;
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultReturnUrl()
-//     {
-//         $params = $_GET;
-//         unset($params['code']);
-//         unset($params['state']);
-//         $params[0] = Yii::$app->controller->getRoute();
-//         return Yii::$app->getUrlManager()->createAbsoluteUrl($params);
-//     }
-//     /**
-//      * Generates the auth state value.
-//      * @return string auth state value.
-//      */
-//     protected function generateAuthState()
-//     {
-//         return sha1(uniqid(get_class($this), true));
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return 'Weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultViewOptions()
-//     {
-//         return [
-//             'popupWidth' => 800,
-//             'popupHeight' => 500,
-//         ];
-//     }
-// }
-
-// <?php
-// namespace leap\oauth;
-// use yii\authclient\OAuth2;
-// use yii\web\HttpException;
-// class Weixin extends OAuth2
-// {
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-    
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-    
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-    
-//     /**
-//      * @inheritdoc
-//      */
-//     public function init()
-//     {
-//         parent::init();
-//         if ($this->scope === null) {
-//             $this->scope = 'snsapi_userinfo';
-//         }
-//     }
-    
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         $defaultParams = [
-//             'appid' => $this->clientId,
-//             'secret' => $this->clientSecret,
-//             'code' => $authCode,
-//             'grant_type' => 'authorization_code',
-//         ];
-//         $request = $this->createRequest()
-//             ->setMethod('POST')
-//             ->setUrl($this->tokenUrl)
-//             ->setData(array_merge($defaultParams, $params));
-//         $response = $this->sendRequest($request);
-//         $token = $this->createToken(['params' => $response]);
-//         $this->setAccessToken($token);
-//         return $token;
-//     }
-    
-//     public function applyAccessTokenToRequest($request, $accessToken)
-//     {
-//         $data = $request->getData();
-//         $data['access_token'] = $accessToken->getToken();
-//         $data['openid'] = $accessToken->getParam('openid');
-//         $request->setData($data);
-//     }
-    
-//     public function initUserAttributes()
-//     {
-//         return $this->api('sns/userinfo', 'GET');
-//     }
-    
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'weixin';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return 'Weixin';
-//     }
-// }
-
-// <?php
-// /**
-//  * @link http://www.tintsoft.com/
-//  * @copyright Copyright (c) 2012 TintSoft Technology Co. Ltd.
-//  * @license http://www.tintsoft.com/license/
-//  */
-// namespace xutl\authclient;
-// use Yii;
-// use yii\base\Exception;
-// use yii\authclient\OAuth2;
-// /**
-//  * Class Wechat
-//  * @package xutl\authclient
-//  */
-// class Wechat extends OAuth2
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://open.weixin.qq.com/connect/qrconnect';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://api.weixin.qq.com/sns/oauth2/access_token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.weixin.qq.com';
-//     /**
-//      * @inheritdoc
-//      */
-//     public function init()
-//     {
-//         parent::init();
-//         if ($this->scope === null) {
-//             $this->scope = implode(',', [
-//                 'snsapi_login',
-//             ]);
-//         }
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultNormalizeUserAttributeMap()
-//     {
-//         return [
-//             'id' => 'openid',
-//             'username' => 'nickname',
-//         ];
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function buildAuthUrl(array $params = [])
-//     {
-//         $params = array_merge($params, ['appid' => $this->clientId]);
-//         return parent::buildAuthUrl($params);
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     public function fetchAccessToken($authCode, array $params = [])
-//     {
-//         $params = array_merge($params, ['appid' => $this->clientId, 'secret' => $this->clientSecret]);
-//         return parent::fetchAccessToken($authCode, $params);
-//     }
-//     /**
-//      * Handles [[Request::EVENT_BEFORE_SEND]] event.
-//      * Applies [[accessToken]] to the request.
-//      * @param \yii\httpclient\RequestEvent $event event instance.
-//      * @throws Exception on invalid access token.
-//      * @since 2.1
-//      */
-//     public function beforeApiRequestSend($event)
-//     {
-//         $event->request->addData(['openid' => $this->getOpenId()]);
-//         parent::beforeApiRequestSend($event);
-//     }
-//     /**
-//      * 返回OpenId
-//      * @return mixed
-//      */
-//     public function getOpenId()
-//     {
-//         return $this->getAccessToken()->getParam('openid');
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function initUserAttributes()
-//     {
-//         return $this->api('sns/userinfo', 'GET');
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'wechat';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return Yii::t('app','Wechat');
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultViewOptions()
-//     {
-//         return [
-//             'popupWidth' => 800,
-//             'popupHeight' => 500,
-//         ];
-//     }
-// }

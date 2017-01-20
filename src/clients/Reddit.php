@@ -12,7 +12,6 @@
 
 namespace yongtiger\authclient\clients;
 
-use Yii;
 use yii\authclient\OAuth2;
 use yii\base\Event;
 use yii\httpclient\Request;
@@ -25,12 +24,19 @@ use yii\httpclient\Request;
  * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, also can contain `?`, but NO `&`.
  *
  * Sample `Callback URL`:
+ *
  * `http://localhost/1_oauth/frontend/web/index.php/site/auth?authclient=reddit` (OK)
  * `http://localhost/1_oauth/frontend/web/index.php/site/auth` (WRONG!)
- * `http://localhost/1_oauth/frontend/web/index.php?site=auth` (WRONG!)
+ * `http://localhost/1_oauth/frontend/web/index.php??r=site/auth` (WRONG!)
  * `http://localhost/1_oauth/frontend/web/index.php` (WRONG!)
  * `http://localhost/1_oauth/frontend/web` (WRONG!)
  * `http://localhost` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php/site/auth?authclient=reddit` (OK)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php/site/auth` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php??r=site/auth` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web/index.php` (WRONG!)
+ * `http://127.0.0.1/1_oauth/frontend/web` (WRONG!)
+ * `http://127.0.0.1` (WRONG!)
  *
  * Example application configuration:
  *
@@ -50,40 +56,89 @@ use yii\httpclient\Request;
  * ]
  * ```
  *
- * [EXAMPLE JSON RESPONSE BODY FOR GET]
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
  *
- * `$responseContent` at `/vendor/yiisoft/yii2-httpclient/StreamTransport.php`:
+ * [EXAMPLE RESPONSE]
+ *
+ * Authorization URL:
  *
  * ```
- * {"is_employee": false, "name": "yongtiger", "created": 1484725989.0,  "hide_from_robots": false, "is_suspended": false, "created_utc": 1484697189.0, "link_karma": 1,  "in_beta": false, "comment_karma": 0, "over_18": false, "is_gold": false, "is_mod": false, "id": "14jblb", "gold_expiration": null, "inbox_count": 0, "has_verified_email": true, "gold_creddits": 0, "suspension_expiration_utc": null}
+ * https://www.reddit.com/login?dest=https%3A%2F%2Fwww.reddit.com%2Fapi%2Fv1%2Fauthorize%3Fclient_id%3DrDzcE3ocGlxacg%26response_type%3Dcode%26redirect_uri%3Dhttp%253A%252F%252Flocalhost%252F1_oauth%252Ffrontend%252Fweb%252Findex.php%252Fsite%252Fauth%253Fauthclient%253Dreddit%26xoauth_displayname%3DMy%2BApplication%26scope%3Didentity%26state%3Dd8158605d14546d1b0d25c9f682e10cf%26duration%3Dtemporary
  * ```
  *
- * getUserAttributes():
+ * AccessToken Request:
+ *
+ * ```
+ * https://www.reddit.com/api/v1/access_token
+ * ```
+ *
+ * AccessToken Response:
+ *
+ * ```
+ * {"access_token": "pZkHahXx8EF8GD5WeHY9cUy83i0", "token_type": "bearer", "expires_in": 3600, "scope": "identity"}
+ * ```
+ *
+ * Request of `initUserAttributes()`:
+ *
+ * ```
+ * https://oauth.reddit.com/api/v1/me?access_token=pZkHahXx8EF8GD5WeHY9cUy83i0
+ * ```
+ *
+ * Response of `initUserAttributes()`:
+ *
+ * ```
+ * {"is_employee": false, "name": "yongtiger", "created": 1484725989.0, 
+ *  "hide_from_robots": false, "is_suspended": false, "created_utc": 1484697189.0, "link_karma": 1, 
+ *  "in_beta": false, "comment_karma": 0, "over_18": false, "is_gold": false, "is_mod": false, "id": "14jblb", 
+ *  "gold_expiration": null, "inbox_count": 0, "has_verified_email": true, "gold_creddits": 0, 
+ *  "suspension_expiration_utc": null}
+ * ```
  *
  * ```php
-    Array
-    (
-        [is_employee] =>
-        [name] => yongtiger
-        [created] => 1484725989
-        [hide_from_robots] =>
-        [is_suspended] =>
-        [created_utc] => 1484697189
-        [link_karma] => 1
-        [in_beta] =>
-        [comment_karma] => 0
-        [over_18] =>
-        [is_gold] =>
-        [is_mod] =>
-        [id] => 14jblb
-        [gold_expiration] =>
-        [inbox_count] => 0
-        [has_verified_email] => 1
-        [gold_creddits] => 0
-        [suspension_expiration_utc] =>
-        [openid] => 14jblb
-        [fullname] => yongtiger
-    )
+ * Array
+ * (
+ *     [is_employee] => 
+ *     [name] => yongtiger
+ *     [created] => 1484725989
+ *     [hide_from_robots] => 
+ *     [is_suspended] => 
+ *     [created_utc] => 1484697189
+ *     [link_karma] => 1
+ *     [in_beta] => 
+ *     [comment_karma] => 0
+ *     [over_18] => 
+ *     [is_gold] => 
+ *     [is_mod] => 
+ *     [id] => 14jblb
+ *     [gold_expiration] => 
+ *     [inbox_count] => 0
+ *     [has_verified_email] => 1
+ *     [gold_creddits] => 0
+ *     [suspension_expiration_utc] => 
+ *     [openid] => 14jblb
+ *     [fullname] => yongtiger
+ * )
  * ```
  *
  * [REFERENCES]
@@ -181,17 +236,6 @@ class Reddit extends OAuth2 implements IAuth
             'popupHeight' => 680,
         ];
     }
-
-    /**
-     * @inheritdoc
-     */
-    protected function defaultNormalizeUserAttributeMap() {
-        return [
-            'openid' => 'id',
-
-            'fullname' => 'name',
-        ];
-    }
     
     /**
      * @inheritdoc
@@ -216,24 +260,35 @@ class Reddit extends OAuth2 implements IAuth
     }
 
     /**
-     * @inheritdoc
-     */
-    protected function initUserAttributes()
-    {
-        return $this->api('me', 'GET', [], ['Authorization' => 'Bearer ' . $this->getAccessToken()->getToken()]);   ///add Bearer token for api requests
-    }
-
-    /**
      * Add state and duration to $defaultParams
      * @inheritdoc
      */
     public function buildAuthUrl(array $params = [])
     {
-        $params = [
+        $params = array_merge($params, [
             'state' => $this->state,    ///add state to $defaultParams
             'duration' => $this->duration,  ///add duration to $defaultParams
-        ];
+        ]);
         return parent::buildAuthUrl($params);
     }
 
+    /**
+     * @inheritdoc
+     */
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'openid' => 'id',
+            'fullname' => 'name',
+        ];
+    }
+
+    /**
+     * Get user openid and other basic information.
+     *
+     * @return array
+     */
+    protected function initUserAttributes()
+    {
+        return $this->api('me', 'GET', [], ['Authorization' => 'Bearer ' . $this->getAccessToken()->getToken()]);   ///add Bearer token for api requests
+    }
 }

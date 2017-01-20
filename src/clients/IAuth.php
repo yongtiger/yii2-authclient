@@ -16,6 +16,7 @@ namespace yongtiger\authclient\clients;
  * Oauth Interface
  *
  * Sample data:
+ *
  * ```php
     {
        "openid": "ab30d9e58b344caa", 
@@ -37,8 +38,6 @@ namespace yongtiger\authclient\clients;
     {
         // uncomment below to see which attributes you get back
         echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///the first call returns the basic information, including openid, etc.
-        echo "<pre>";print_r($client->getUserInfo('email'));echo "</pre>";  ///returns more user info
-
         echo "<pre>";print_r($client->openid);echo "</pre>";
         echo "<pre>";print_r($client->email);echo "</pre>";
         echo "<pre>";print_r($client->fullName);echo "</pre>";
@@ -48,7 +47,6 @@ namespace yongtiger\authclient\clients;
         echo "<pre>";print_r($client->gender);echo "</pre>";
         echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
         echo "<pre>";print_r($client->linkUrl);echo "</pre>";
-        
         echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///later call returns more user information
         exit;
         // ...
@@ -62,16 +60,6 @@ interface IAuth extends \yii\authclient\ClientInterface
     const GENDER_MALE = 1;
     const GENDER_FEMALE = 0;
 
-    /**
-     * Get user info included extra attribute
-     *
-     * When there is no specified attribute in getUserAttributes(), try calling this method to get. @see [[trait ClientTrait]]
-     *
-     * @param string $attribute user extra attribute
-     * @return array
-     */
-    public function getUserInfo($attribute);
-    
     /**
      * Note: You can not use getId() because it conflicts with getId() of BaseClient!
      *

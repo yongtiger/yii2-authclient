@@ -20,18 +20,54 @@ namespace yongtiger\authclient\clients;
  */
 trait ClientTrait
 {
+    /**
+     * Extra user info
+     */
+    private $userInfo = null;
 
     /**
-     * @inheritdoc
+     * Get Extra User Info.
+     * 
+     * If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+     *
+     * @param string $attribute
+     * @return array|[]|null
      */
-    public function getUserInfo($attribute)
+    protected function getUserInfo($attribute)
     {
-        if (isset($this->getUserAttributes()[$attribute])) {
-            return $this->getUserAttributes()[$attribute];
+        if ($this->userInfo === null) {
+
+            ///Get extra user info code here ...
+            $this->userInfo = $this->initUserInfoAttributes();
+
+            ///If `$this->userInfo` is empty, Set as an empty array. Later will no longer call `$this->initUserInfoAttributes()` for better efficiency.
+            if (empty($this->userInfo)) {
+                $this->userInfo = [];
+            } else {
+                $this->setNormalizeUserAttributeMap($this->userInfoNormalizeUserAttributeMap());
+                $this->setUserAttributes(array_merge($this->getUserAttributes(), $this->userInfo));
+            }
+
         }
+        return isset($this->getUserAttributes()[$attribute]) ? $this->getUserAttributes()[$attribute] : null;
+    }
 
-        ///Get extra user info: ...
-
+    /**
+     * Get extra user info
+     *
+     * If needed, it can be overridden by trait-classes, e.g.:
+     *
+     * ```php
+     * protected function initUserInfoAttributes()
+     * {
+     *    return $this->api("user/get_user_info", 'GET', ['oauth_consumer_key'=>$this->getUserAttributes()['client_id'], 'openid'=>$this->getUserAttributes()['openid']]);
+     * }
+     * ```
+     *
+     * @return null
+     */
+    protected function initUserInfoAttributes()
+    {
         return null;
     }
 
