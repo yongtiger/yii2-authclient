@@ -203,7 +203,7 @@ class Amazon extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'user_id',
         ];
     }

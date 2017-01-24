@@ -227,7 +227,7 @@ class Weixin extends OAuth2 implements IAuth
     protected function defaultNormalizeUserAttributeMap()
     {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'fullname' => 'nickname',
             'gender' => 'sex',
             'avatarUrl' => 'headimgurl',

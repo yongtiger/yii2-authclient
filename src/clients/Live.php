@@ -168,7 +168,7 @@ class Live extends \yii\authclient\clients\Live implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'email' => ['emails', 'account'],
             'fullname' => 'name',

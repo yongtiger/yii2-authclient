@@ -192,7 +192,7 @@ class Twitter extends \yii\authclient\clients\Twitter implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id_str',
             'fullname' => 'name',
             'language' => 'lang',

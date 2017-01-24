@@ -145,7 +145,7 @@ class Yandex extends \yii\authclient\clients\Yandex implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'email' => 'default_email',
             'fullname' => 'login',

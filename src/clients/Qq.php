@@ -224,7 +224,7 @@ class Qq extends OAuth2 implements IAuth
      */
     protected function userInfoNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'fullname' => 'nickname',
             'email' => function ($attributes) {
                 return isset($attributes['nickname']) ? $attributes['nickname'] . '@qq.com' : null;

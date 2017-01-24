@@ -219,7 +219,7 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'fullname' => 'login',
             'avatarUrl' => 'avatar_url',

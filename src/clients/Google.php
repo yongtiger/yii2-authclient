@@ -183,7 +183,7 @@ class Google extends \yii\authclient\clients\Google implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'email' => ['emails', 0, 'value'],      ///`[emails][0][value] => yongtiger@yahoo.com`
             ///Google register a new account with Email instead of username, also needed first name and last name.

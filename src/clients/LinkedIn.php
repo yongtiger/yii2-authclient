@@ -121,6 +121,7 @@ use Yii;
  * 
  *     [locale] => zh_CN
  *     [updated_time] => 2017-01-16T19:31:18+0000
+ *     [provider] => linkedin
  *     [openid] => ab30d9e58b344caa
  *     [email] => tigeryang.brainbook@outlook.com
  *     [fullname] => tiger yang
@@ -158,7 +159,7 @@ class LinkedIn extends\yii\authclient\clients\LinkedIn implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'email' => 'email-address',
             'fullname' => 'formatted-name',

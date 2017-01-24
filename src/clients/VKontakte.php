@@ -163,7 +163,7 @@ class VKontakte extends \yii\authclient\clients\VKontakte implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'uid',
             'email' => function ($attributes) {
                 return $this->getAccessToken()->getParam('email');

@@ -182,7 +182,7 @@ class Douban extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'fullname' => 'name',
             'avatarUrl' => 'avatar',

@@ -187,7 +187,7 @@ class Instagram extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => ['data', 'id'],
             'fullname' => ['data', 'full_name'],
             'avatarUrl' => ['data', 'profile_picture'],

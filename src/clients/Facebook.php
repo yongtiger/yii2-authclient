@@ -194,7 +194,7 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName,
+            'provider' => $this->defaultName(),
             'openid' => 'id',
             'fullname' => 'name',
             'firstname' => 'first_name',
