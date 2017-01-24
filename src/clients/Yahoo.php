@@ -55,6 +55,7 @@ use yii\authclient\OAuth2;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -226,6 +227,7 @@ use yii\authclient\OAuth2;
  *     [profilePermission] => PRIVATE
  *     [uri] => https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile
  *     [cache] => 1
+ *     [provider] => yahoo
  *     [email] => tigeryang.brainbook@outlook.com
  *     [fullname] => tiger yong
  *     [firstname] => tiger
@@ -318,6 +320,7 @@ class Yahoo extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => ['guid', 'value'],
         ];
     }

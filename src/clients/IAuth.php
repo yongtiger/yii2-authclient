@@ -19,15 +19,16 @@ namespace yongtiger\authclient\clients;
  *
  * ```php
     {
-       "openid": "ab30d9e58b344caa", 
-       "email": "tigeryang.brainbook@outlook.com", 
-       "fullname": "tiger yang", 
-       "firstname": "tiger", 
-       "lastname": "yang", 
-       "gender": "male", 
-       "language": "en_US", 
-       "avatarUrl": "https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large", 
-       "linkUrl": "https://profile.live.com/", 
+        "provider": "live", 
+        "openid": "ab30d9e58b344caa", 
+        "email": "tigeryang.brainbook@outlook.com", 
+        "fullname": "tiger yang", 
+        "firstname": "tiger", 
+        "lastname": "yang", 
+        "gender": "male", 
+        "language": "en_US", 
+        "avatarUrl": "https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large", 
+        "linkUrl": "https://profile.live.com/", 
     }
  * ```
  *
@@ -38,6 +39,7 @@ namespace yongtiger\authclient\clients;
     {
         // uncomment below to see which attributes you get back
         echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///the first call returns the basic information, including openid, etc.
+        echo "<pre>";print_r($client->provider);echo "</pre>";
         echo "<pre>";print_r($client->openid);echo "</pre>";
         echo "<pre>";print_r($client->email);echo "</pre>";
         echo "<pre>";print_r($client->fullName);echo "</pre>";
@@ -59,6 +61,11 @@ interface IAuth extends \yii\authclient\ClientInterface
 {
     const GENDER_MALE = 1;
     const GENDER_FEMALE = 0;
+
+    /**
+     * @return string
+     */
+    public function getProvider();
 
     /**
      * Note: You can not use getId() because it conflicts with getId() of BaseClient!

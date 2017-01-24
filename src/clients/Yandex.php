@@ -17,7 +17,7 @@ namespace yongtiger\authclient\clients;
  *
  * In order to use Yandex OAuth2 you must register your application at <https://oauth.yandex.ru/client/new>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`: 
  *
@@ -57,6 +57,7 @@ namespace yongtiger\authclient\clients;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -110,6 +111,7 @@ namespace yongtiger\authclient\clients;
  * (
  *     [login] => yong.tiger
  *     [id] => 456664807
+ *     [provider] => yandex
  *     [openid] => 456664807
  *     [fullname] => yong.tiger
  *     [gender] => 
@@ -143,6 +145,7 @@ class Yandex extends \yii\authclient\clients\Yandex implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'email' => 'default_email',
             'fullname' => 'login',

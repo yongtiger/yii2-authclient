@@ -2,7 +2,7 @@
     "name": "yongtiger/yii2-authclient",
     "description": "",
     "type": "yii2-extension",
-    "keywords": ["yii2","extension","authclient","auth","oauth","authentication","social","qq","wechat","weixin","weibo","renren"],
+    "keywords": ["yii2","extension","authclient","auth","oauth","authentication","social","google","facebook","github","live","linkedin","twitter","vKontakte","yandex","amazon","instagram","reddit","yahoo","qq","wechat","weixin","weibo","renren"],
     "license": "MIT",
     "support": {
         "issues": "https://github.com/yongtiger/yii2-authclient/issues",

@@ -21,7 +21,7 @@ use yii\httpclient\Request;
  *
  * In order to use QQ OAuth2 you must register your application at <https://connect.qq.com/>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `?` or `&`.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `?` or `&`.
  *
  * Sample `Callback URL`:
  *
@@ -63,6 +63,7 @@ use yii\httpclient\Request;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -112,11 +113,12 @@ use yii\httpclient\Request;
  * ```
  *
  * ```php
- *     Array
- *     (
- *         [client_id] => 101367642
- *         [openid] => 9B18299BC4CBFDAFCA09DBE95A6A0F23
- *     )
+ * Array
+ * (
+ *     [client_id] => 101367642
+ *     [provider] => qq
+ *     [openid] => 9B18299BC4CBFDAFCA09DBE95A6A0F23
+ * )
  * ```
  *
  * Request of `initUserInfoAttributes()`:
@@ -133,31 +135,32 @@ use yii\httpclient\Request;
  *
  * ```php
  * Array
- *   (
- *       [client_id] => 101367642
- *       [openid] => 42E5367A39543562249CA32DA627D8A2
- *       [ret] => 0
- *       [msg] => 
- *       [is_lost] => 0
- *       [nickname] => tiger_yang
- *       [gender] => 1
- *       [province] => 北京
- *       [city] => 东城
- *       [year] => 1971
- *       [figureurl] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/30
- *       [figureurl_1] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/50
- *       [figureurl_2] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
- *       [figureurl_qq_1] => http://q.qlogo.cn/qqapp/101367642/42E5367A39543562249CA32DA627D8A2/40
- *       [figureurl_qq_2] => http://q.qlogo.cn/qqapp/101367642/42E5367A39543562249CA32DA627D8A2/100
- *       [is_yellow_vip] => 0
- *       [vip] => 0
- *       [yellow_vip_level] => 0
- *       [level] => 0
- *       [is_yellow_year_vip] => 0
- *       [fullname] => tiger_yang
- *       [email] => tiger_yang@qq.com
- *       [avatarUrl] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
- *   )
+ * (
+ *     [client_id] => 101367642
+ *     [openid] => 42E5367A39543562249CA32DA627D8A2
+ *     [ret] => 0
+ *     [msg] => 
+ *     [is_lost] => 0
+ *     [nickname] => tiger_yang
+ *     [gender] => 1
+ *     [province] => 北京
+ *     [city] => 东城
+ *     [year] => 1971
+ *     [figureurl] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/30
+ *     [figureurl_1] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/50
+ *     [figureurl_2] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
+ *     [figureurl_qq_1] => http://q.qlogo.cn/qqapp/101367642/42E5367A39543562249CA32DA627D8A2/40
+ *     [figureurl_qq_2] => http://q.qlogo.cn/qqapp/101367642/42E5367A39543562249CA32DA627D8A2/100
+ *     [is_yellow_vip] => 0
+ *     [vip] => 0
+ *     [yellow_vip_level] => 0
+ *     [level] => 0
+ *     [is_yellow_year_vip] => 0
+ *     [provider] => qq
+ *     [fullname] => tiger_yang
+ *     [email] => tiger_yang@qq.com
+ *     [avatarUrl] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
+ * )
  * ```
  *
  * [REFERENCES]
@@ -221,6 +224,7 @@ class Qq extends OAuth2 implements IAuth
      */
     protected function userInfoNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'fullname' => 'nickname',
             'email' => function ($attributes) {
                 return isset($attributes['nickname']) ? $attributes['nickname'] . '@qq.com' : null;

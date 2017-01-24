@@ -19,7 +19,7 @@ use yii\authclient\OAuth2;
  *
  * In order to use Instagram OAuth2 you must register your application at <https://www.instagram.com/developer/>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`:
  *
@@ -51,6 +51,7 @@ use yii\authclient\OAuth2;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -124,6 +125,7 @@ use yii\authclient\OAuth2;
  *             [id] => 4476057631
  *         )
  * 
+ *     [provider] => instagram
  *     [openid] => 4476057631
  *     [fullname] => yongtiger
  *     [avatarUrl] => https://scontent.cdninstagram.com/t51.2885-19/11906329_960233084022564_1448528159_a.jpg
@@ -185,6 +187,7 @@ class Instagram extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => ['data', 'id'],
             'fullname' => ['data', 'full_name'],
             'avatarUrl' => ['data', 'profile_picture'],

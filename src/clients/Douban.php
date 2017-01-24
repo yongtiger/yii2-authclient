@@ -19,6 +19,8 @@ use yii\authclient\OAuth2;
  *
  * In order to use Douban OAuth2 you must register your application at <https://www.douban.com/>.
  *
+ * Note: No test!!!
+ *
  * Example application configuration:
  *
  * ```php
@@ -37,54 +39,136 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
+ *
+ * [EXAMPLE RESPONSE]
+ *
+ * Authorization URL:
+ *
+ * ```
+ * https://www.douban.com/service/auth2/auth?client_id=0b5405e19c58e4cc21fc11a4d50aae64&redirect_uri=https://www.example.com/back&response_type=code&scope=shuo_basic_r,shuo_basic_w,douban_basic_common
+ * ```
+ *
+ * AccessToken Request:
+ *
+ * ```
+ * https://www.douban.com/service/auth2/token
+ * ```
+ *
+ * AccessToken Response:
+ *
+ * ```
+ * {"access_token":"a14afef0f66fcffce3e0fcd2e34f6ff4","expires_in":3920,"refresh_token":"5d633d136b6d56a41829b73a424803ec","douban_user_id":"1221"}
+ * ```
+ *
+ * Request of `initUserAttributes()`:
+ *
+ * ```
+ * https://api.douban.com/v2/user/~me
+ * ```
+ *
+ * ```
+ * curl "https://api.douban.com/v2/user/~me" -H "Authorization: Bearer a14afef0f66fcffce3e0fcd2e34f6ff4"
+ * ```
+ *
+ * Response of `initUserAttributes()`:
+ *
+ * ```
+ * {
+ *    "id": "1000001",
+ *    "uid": "ahbei",
+ *    "name": "阿北",
+ *    "avatar": "https://img1.doubanio.com/icon/u1000001-28.jpg", //头像小图
+ *    "alt": "https://www.douban.com/people/ahbei/",
+ *    "relation": "contact", //和当前登录用户的关系，friend或contact
+ *    "created": "2006-01-09 21:12:47", //注册时间
+ *    "loc_id": "108288", //城市id
+ *    "loc_name": "北京", //所在地全称
+ *    "desc": "     现在多数时间在忙忙碌碌地为豆瓣添砖加瓦。坐在马桶上看书，算是一天中最放松的时间。
+ *    我不但喜欢读书、旅行和音乐电影，还曾经是一个乐此不疲的实践者，有一墙碟、两墙书、三大洲的车船票为记。
+ *    (因为时间和数量的原因，豆邮和"@阿北"不能保证看到。有豆瓣的问题请email联系help@douban.com。)"
+ * }
+ * ```
+ *
+ * [REFERENCES]
+ *
  * @see https://www.douban.com
- * @see http://API
+ * @see http://developers.douban.com/wiki/?title=user_v2#User
  */
 class Douban extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @inheritdoc
      */
     public $authUrl = 'https://www.douban.com/service/auth2/auth';
+
     /**
      * @inheritdoc
      */
     public $tokenUrl = 'https://www.douban.com/service/auth2/token';
+
     /**
      * @inheritdoc
      */
     public $apiBaseUrl = 'https://api.douban.com';
+
     /**
      * @inheritdoc
      */
     public $scope = 'douban_basic_common';
+
     /**
      * @inheritdoc
      */
-    protected function initUserAttributes()
-    {
-        return $this->api('me', 'GET', [
-            'fields' => implode(',', $this->attributeNames),
-        ]);
-    }
-
-    /**
-     * Get authed user info
-     * @return array
-     * @see http://developers.douban.com/wiki/?title=user_v2#User
-     */
-    public function getUserInfo()
-    {
-        return $this->api('v2/user/~me', 'GET');
-    }
     protected function defaultName()
     {
         return 'douban';
     }
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultTitle()
     {
-        return '豆瓣登陆';
+        return 'Douban';
     }
+
+    /**
+     * @inheritdoc
+     */
+    public $attributeNames = [
+        'name',
+        'avatar',
+        'alt',
+    ];
+
+    /**
+     * @inheritdoc
+     */
     protected function defaultViewOptions()
     {
         return [
@@ -92,155 +176,25 @@ class Douban extends OAuth2 implements IAuth
             'popupHeight' => 500,
         ];
     }
+
     /**
-     * @ineritdoc
+     * @inheritdoc
      */
-    public function api($apiSubUrl, $method = 'GET', array $params = [], array $headers = [])
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'provider' => $this->defaultName,
+            'openid' => 'id',
+            'fullname' => 'name',
+            'avatarUrl' => 'avatar',
+            'linkUrl' => 'alt',
+        ];
+    }
+
+    /**
+     * @inheritdoc
+     */
+    protected function initUserAttributes()
     {
-        if (preg_match('/^https?:\\/\\//is', $apiSubUrl)) {
-            $url = $apiSubUrl;
-        } else {
-            $url = $this->apiBaseUrl . '/' . $apiSubUrl;
-        }
-        $accessToken = $this->getAccessToken();
-        if (!is_object($accessToken) || !$accessToken->getIsValid()) {
-            throw new Exception('Invalid access token.');
-        }
-        $headers[] = 'Authorization: Bearer ' . $accessToken->getToken();
-        return $this->apiInternal($accessToken, $url, $method, $params, $headers);
+        return $this->api('v2/user/~me', 'GET', [], ['Authorization' => 'Bearer ' . $this->getAccessToken()->getToken()]);   ///add Bearer token for api requests. @see https://developers.douban.com/wiki/?title=connect
     }
 }
-
-
-// <?php
-// namespace xj\oauth;
-// use yii\authclient\OAuth2;
-// use yii\base\Exception;
-// /**
-//  * Douban OAuth
-//  * @author light <light-li@hotmail.com>
-//  */
-// class DoubanAuth extends OAuth2 implements IAuth
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://www.douban.com/service/auth2/auth';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://www.douban.com/service/auth2/token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.douban.com';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $scope = 'douban_basic_common';
-//     protected function initUserAttributes()
-//     {
-//         return $this->api('v2/user/~me', 'GET');
-//     }
-//     /**
-//      * @return array
-//      * @see http://developers.douban.com/wiki/?title=user_v2#User
-//      */
-//     public function getUserInfo()
-//     {
-//         return $this->getUserAttributes();
-//     }
-//     /**
-//      * @return string
-//      */
-//     public function getOpenid()
-//     {
-//         $attributes = $this->getUserAttributes();
-//         return $attributes['id'];
-//     }
-//     protected function defaultName()
-//     {
-//         return 'douban';
-//     }
-//     protected function defaultTitle()
-//     {
-//         return 'Douban';
-//     }
-//     /**
-//      *
-//      * @ineritdoc
-//      */
-//     public function api($apiSubUrl, $method = 'GET', array $params = [], array $headers = [])
-//     {
-//         if (preg_match('/^https?:\\/\\//is', $apiSubUrl)) {
-//             $url = $apiSubUrl;
-//         } else {
-//             $url = $this->apiBaseUrl . '/' . $apiSubUrl;
-//         }
-//         $accessToken = $this->getAccessToken();
-//         if (!is_object($accessToken) || !$accessToken->getIsValid()) {
-//             throw new Exception('Invalid access token.');
-//         }
-//         $headers[] = 'Authorization: Bearer ' . $accessToken->getToken();
-//         return $this->apiInternal($accessToken, $url, $method, $params, $headers);
-//     }
-// }
-
-// <?php
-// /**
-//  * @link http://www.tintsoft.com/
-//  * @copyright Copyright (c) 2012 TintSoft Technology Co. Ltd.
-//  * @license http://www.tintsoft.com/license/
-//  */
-// namespace xutl\authclient;
-// use Yii;
-// use yii\authclient\OAuth2;
-// class Douban extends OAuth2
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://www.douban.com/service/auth2/auth';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://www.douban.com/service/auth2/token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.douban.com/';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $scope = 'douban_basic_common';
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function initUserAttributes() {
-//         return $this->api('v2/user/~me', 'GET');
-//     }
-//     /**
-//      * @return array
-//      * @see http://developers.douban.com/wiki/?title=user_v2#User
-//      */
-//     public function getUserInfo()
-//     {
-//         return $this->getUserAttributes();
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName() {
-//         return 'douban';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle() {
-//         return Yii::t('app','Douban');
-//     }
-//     protected function defaultViewOptions() {
-//         return [ 'popupWidth'=> 1000, 'popupHeight'=> 500 ];
-//     }
-// }
-

@@ -19,7 +19,7 @@ use yii\authclient\OAuth2;
  *
  * In order to use Weibo OAuth2 you must register your application at <http://open.weibo.com/>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`:
  *
@@ -63,6 +63,7 @@ use yii\authclient\OAuth2;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -194,6 +195,7 @@ use yii\authclient\OAuth2;
  *     [credit_score] => 80
  *     [user_ability] => 0
  *     [urank] => 4
+ *     [provider] => weibo
  *     [fullname] => 老虎杨光
  *     [language] => zh-cn
  *     [avatarUrl] => http://tva3.sinaimg.cn/default/images/default_avatar_male_50.gif
@@ -225,7 +227,7 @@ class Weibo extends OAuth2 implements IAuth
     /**
      * @inheritdoc
      */
-    public $apiBaseUrl = 'https://api.weibo.com/2';
+    public $apiBaseUrl = 'https://api.weibo.com';
 
     /**
      * @inheritdoc
@@ -259,6 +261,7 @@ class Weibo extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'uid',
         ];
     }
@@ -288,7 +291,7 @@ class Weibo extends OAuth2 implements IAuth
      */
     protected function initUserAttributes()
     {
-        return $this->api('oauth2/get_token_info', 'POST');
+        return $this->api('/2/oauth2/get_token_info', 'POST');
     }
 
     /**

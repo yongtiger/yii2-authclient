@@ -21,7 +21,7 @@ use yii\httpclient\Request;
  *
  * In order to use Weixin OAuth2 you must register your application at <https://open.weixin.qq.com/>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`:
  *
@@ -64,6 +64,7 @@ use yii\httpclient\Request;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -127,7 +128,8 @@ use yii\httpclient\Request;
  *        (
  *        )
  * 
- *    [unionid] => o4sFWs-RwG0zuImUmdaMmErLxKOo
+ *     [unionid] => o4sFWs-RwG0zuImUmdaMmErLxKOo
+ *     [provider] => weixin
  *     [fullname] => 老虎
  *     [gender] => 1
  *     [avatarUrl] => http://wx.qlogo.cn/mmopen/ajNVdqHZLLAjDp1pr7oRywzDAAQXbhV2iamDW2rGxFhjswg91Is913d3t7cNU5CH7De9AhPbh1pE98RqOic57Q5Q/0
@@ -225,6 +227,7 @@ class Weixin extends OAuth2 implements IAuth
     protected function defaultNormalizeUserAttributeMap()
     {
         return [
+            'provider' => $this->defaultName,
             'fullname' => 'nickname',
             'gender' => 'sex',
             'avatarUrl' => 'headimgurl',

@@ -17,7 +17,7 @@ namespace yongtiger\authclient\clients;
  *
  * In order to use GitHub OAuth2 you must register your application at <https://github.com/settings/applications/new>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`:
  *
@@ -68,6 +68,7 @@ namespace yongtiger\authclient\clients;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -154,6 +155,7 @@ namespace yongtiger\authclient\clients;
  *     [owned_private_repos] => 0
  *     [disk_usage] => 326
  *     [collaborators] => 0
+ *     [provider] => github
  *     [openid] => 19513015
  *     [fullname] => yongtiger
  *     [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
@@ -217,6 +219,7 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'fullname' => 'login',
             'avatarUrl' => 'avatar_url',

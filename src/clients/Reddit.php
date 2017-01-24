@@ -21,7 +21,7 @@ use yii\httpclient\Request;
  *
  * In order to use Reddit OAuth you must register your application at <https://www.reddit.com/prefs/apps/>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, also can contain `?`, but NO `&`.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, also can contain `?`, but NO `&`.
  *
  * Sample `Callback URL`:
  *
@@ -63,6 +63,7 @@ use yii\httpclient\Request;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -136,6 +137,7 @@ use yii\httpclient\Request;
  *     [has_verified_email] => 1
  *     [gold_creddits] => 0
  *     [suspension_expiration_utc] => 
+ *     [provider] => reddit
  *     [openid] => 14jblb
  *     [fullname] => yongtiger
  * )
@@ -277,6 +279,7 @@ class Reddit extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'fullname' => 'name',
         ];

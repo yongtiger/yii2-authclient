@@ -74,6 +74,14 @@ trait ClientTrait
     /**
      * @inheritdoc
      */
+    public function getProvider()
+    {
+        return isset($this->getUserAttributes()['provider']) ? $this->getUserAttributes()['provider'] : $this->getUserInfo('provider');
+    }
+
+    /**
+     * @inheritdoc
+     */
     public function getOpenid()
     {
         return isset($this->getUserAttributes()['openid']) ? $this->getUserAttributes()['openid'] : $this->getUserInfo('openid');

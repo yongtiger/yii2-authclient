@@ -17,7 +17,7 @@ namespace yongtiger\authclient\clients;
  *
  * In order to use Facebook OAuth2 you must add your Facebook Login product at <https://developers.facebook.com/apps>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Sample `Callback URL`: 
  *
@@ -68,6 +68,7 @@ namespace yongtiger\authclient\clients;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -145,6 +146,7 @@ namespace yongtiger\authclient\clients;
  *     [verified] => 1
  *     [email] => tigeryang.brainbook@outlook.com
  *     [id] => 123618604810465
+ *     [provider] => facebook
  *     [openid] => 123618604810465
  *     [fullname] => Tiger Yong
  *     [firstname] => Tiger
@@ -192,6 +194,7 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'fullname' => 'name',
             'firstname' => 'first_name',

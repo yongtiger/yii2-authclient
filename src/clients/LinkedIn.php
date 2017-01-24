@@ -19,7 +19,7 @@ use Yii;
  *
  * In order to use linkedIn OAuth2 you must register your application at <https://www.linkedin.com/secure/developer>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing.
  *
  * Example application configuration:
  *
@@ -38,6 +38,30 @@ use Yii;
  *     ...
  * ]
  * ```
+ *
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
  *
  * [EXAMPLE RESPONSE]
  *
@@ -134,6 +158,7 @@ class LinkedIn extends\yii\authclient\clients\LinkedIn implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'email' => 'email-address',
             'fullname' => 'formatted-name',

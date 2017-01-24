@@ -17,7 +17,9 @@ use yii\authclient\OAuth2;
 /**
  * Renren OAuth2
  *
- * In order to use Renren OAuth2 you must register your application at <https://developer.renren.com>.
+ * In order to use Renren OAuth2 you must register your application at <https://dev.renren.com>.
+ *
+ * Note: Has been invalid!!!
  *
  * Example application configuration:
  *
@@ -37,41 +39,55 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
- * @see https://developer.renren.com/
+ * [Usage]
+ * 
+ * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
+ * {
+ *     ///Uncomment below to see which attributes you get back.
+ *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
+ *     echo "<pre>";print_r($client->openid);echo "</pre>";
+ *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
+ *     echo "<pre>";print_r($client->email);echo "</pre>";
+ *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+ *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->fullName);echo "</pre>";
+ *     echo "<pre>";print_r($client->firstName);echo "</pre>";
+ *     echo "<pre>";print_r($client->lastName);echo "</pre>";
+ *     echo "<pre>";print_r($client->language);echo "</pre>";
+ *     echo "<pre>";print_r($client->gender);echo "</pre>";
+ *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
+ *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
+ *     exit;
+ *     // ...
+ * }
+ *
+ * [REFERENCES]
+ *
+ * @see https://dev.renren.com/
+ * @see http://wiki.dev.renren.com/wiki/V2/user/get
+ * @see http://wiki.dev.renren.com/wiki/Authentication
  */
 class Renren extends OAuth2 implements IAuth
 {
+    use ClientTrait;
+
     /**
      * @inheritdoc
      */
     public $authUrl = 'https://graph.renren.com/oauth/authorize';
+
     /**
      * @inheritdoc
      */
     public $tokenUrl = 'https://graph.renren.com/oauth/token';
+
     /**
      * @inheritdoc
      */
     public $apiBaseUrl = 'https://api.renren.com';
-    /**
-     * Try to use getUserAttributes to get simple user info
-     * @see http://wiki.dev.renren.com/wiki/Authentication
-     * @inheritdoc
-     */
-    protected function initUserAttributes()
-    {
-        return $this->getAccessToken()->getParams()['user'];
-    }
-    /**
-     * Get authed user info
-     * @see http://wiki.dev.renren.com/wiki/V2/user/get
-     * @return array
-     */
-    public function getUserInfo()
-    {
-        $user = $this->getUserAttributes();
-        return $this->api("v2/user/get", 'GET', ['userId' => $user['id']]);
-    }
+
     /**
      * @inheritdoc
      */
@@ -79,13 +95,15 @@ class Renren extends OAuth2 implements IAuth
     {
         return 'renren';
     }
+
     /**
      * @inheritdoc
      */
     protected function defaultTitle()
     {
-        return '人人登陆';
+        return 'Renren';
     }
+
     /**
      * @inheritdoc
      */
@@ -96,71 +114,34 @@ class Renren extends OAuth2 implements IAuth
             'popupHeight' => 500,
         ];
     }
+
+    /**
+     * @inheritdoc
+     */
+    protected function defaultNormalizeUserAttributeMap() {
+        return [
+            'provider' => $this->defaultName,
+            'openid' => 'id',
+        ];
+    }
+
+    /**
+     * Get user openid and other basic information.
+     *
+     * @return array
+     */
+    protected function initUserAttributes()
+    {
+        return $this->getAccessToken()->getParams()['user'];
+    }
+
+    /**
+     * Get extra user info.
+     *
+     * @return array
+     */
+    protected function initUserInfoAttributes()
+    {
+        return $this->api("v2/user/get", 'GET', ['userId' => $this->getUserAttributes()['id']]);
+    }
 }
-
-
-// <?php
-// namespace xj\oauth;
-// use yii\authclient\OAuth2;
-// /**
-//  * Renren OAuth
-//  * @author light <light-li@hotmail.com>
-//  * @see http://wiki.dev.renren.com/wiki/Authentication
-//  */
-// class RenrenAuth extends OAuth2 implements IAuth
-// {
-//     /**
-//      * @inheritdoc
-//      */
-//     public $authUrl = 'https://graph.renren.com/oauth/authorize';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $tokenUrl = 'https://graph.renren.com/oauth/token';
-//     /**
-//      * @inheritdoc
-//      */
-//     public $apiBaseUrl = 'https://api.renren.com';
-//     /**
-//      * Try to use getUserAttributes to get simple user info
-//      * @see http://wiki.dev.renren.com/wiki/Authentication
-//      *
-//      * @inheritdoc
-//      */
-//     protected function initUserAttributes()
-//     {
-//         return $this->getAccessToken()->getParams()['user'];
-//     }
-//     /**
-//      * Get authed user info
-//      *
-//      * @see http://wiki.dev.renren.com/wiki/V2/user/get
-//      * @return array
-//      */
-//     public function getUserInfo()
-//     {
-//         return $this->api("v2/user/get", 'GET', ['userId' => $this->getOpenid()]);
-//     }
-//     /**
-//      * @return int
-//      */
-//     public function getOpenid()
-//     {
-//         $attributes = $this->getUserAttributes();
-//         return $attributes['id'];
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultName()
-//     {
-//         return 'renren';
-//     }
-//     /**
-//      * @inheritdoc
-//      */
-//     protected function defaultTitle()
-//     {
-//         return 'Renren';
-//     }
-// }

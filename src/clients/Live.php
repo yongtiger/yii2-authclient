@@ -56,6 +56,7 @@ namespace yongtiger\authclient\clients;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -136,6 +137,7 @@ namespace yongtiger\authclient\clients;
  *     [firstname] => tiger
  *     [lastname] => yang
  *     [language] => zh_CN
+ *     [provider] => live
  *     [avatarUrl] => https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large
  *     [linkUrl] => https://profile.live.com/cid-ab30d9e58b344caa
  * )
@@ -166,6 +168,7 @@ class Live extends \yii\authclient\clients\Live implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id',
             'email' => ['emails', 'account'],
             'fullname' => 'name',

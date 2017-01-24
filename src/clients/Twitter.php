@@ -19,7 +19,7 @@ namespace yongtiger\authclient\clients;
  *
  * Note: Be sure to select `Request email addresses from users` in your `Twitter Additional Permissions`!
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `&`.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `&`.
  *
  * Sample `Callback URL`:
  *
@@ -66,6 +66,7 @@ namespace yongtiger\authclient\clients;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -158,6 +159,7 @@ namespace yongtiger\authclient\clients;
  *     [notifications] => 
  *     [translator_type] => none
  *     [email] => tigeryang.brainbook@outlook.com
+ *     [provider] => twitter
  *     [openid] => 821256943540940801
  *     [fullname] => yongtiger
  *     [language] => zh-cn
@@ -190,6 +192,7 @@ class Twitter extends \yii\authclient\clients\Twitter implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'id_str',
             'fullname' => 'name',
             'language' => 'lang',

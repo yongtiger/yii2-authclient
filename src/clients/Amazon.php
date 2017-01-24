@@ -52,6 +52,7 @@ use yii\authclient\OAuth2;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -109,6 +110,7 @@ use yii\authclient\OAuth2;
  *     [exp] => 3598
  *     [app_id] => amzn1.application.d65c23fdd3c64214bafc7a604820ffe9
  *     [iat] => 1484875823
+ *     [provider] => amazon
  *     [openid] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
  * )
  * ```
@@ -134,6 +136,7 @@ use yii\authclient\OAuth2;
  *     [exp] => 3598
  *     [app_id] => amzn1.application.d65c23fdd3c64214bafc7a604820ffe9
  *     [iat] => 1484875823
+ *     [provider] => amazon
  *     [openid] => amzn1.account.AHQG2JPGF47GOIO4WYGDWAHKTIVA
  *     [name] => yongtiger
  *     [email] => tigeryang.brainbook@outlook.com
@@ -200,6 +203,7 @@ class Amazon extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'user_id',
         ];
     }

@@ -19,7 +19,7 @@ use yii\authclient\OAuth2;
  *
  * In order to use VKontakte OAuth2 you must register your application at <http://vk.com/editapp?act=create>.
  *
- * Note:  Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `?` or `&`.
+ * Note: Authorization `Callback URL` can contain `localhost` or `127.0.0.1` for testing, but CANNOT contain `?` or `&`.
  *
  * Sample `Callback URL`:
  *
@@ -61,6 +61,7 @@ use yii\authclient\OAuth2;
  *     ///Uncomment below to see which attributes you get back.
  *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
  *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
+ *     echo "<pre>";print_r($client->provider);echo "</pre>";
  *     echo "<pre>";print_r($client->openid);echo "</pre>";
  *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
  *     echo "<pre>";print_r($client->email);echo "</pre>";
@@ -125,6 +126,7 @@ use yii\authclient\OAuth2;
  *     [country] => 0
  *     [timezone] => -8
  *     [photo] => http://vk.com/images/camera_50.png
+ *     [provider] => vkontakte
  *     [openid] => 407891976
  *     [email] => 
  *     [fullname] => Tiger Yong
@@ -161,6 +163,7 @@ class VKontakte extends \yii\authclient\clients\VKontakte implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
+            'provider' => $this->defaultName,
             'openid' => 'uid',
             'email' => function ($attributes) {
                 return $this->getAccessToken()->getParam('email');
