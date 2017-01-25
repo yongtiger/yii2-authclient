@@ -61,30 +61,6 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -158,8 +134,8 @@ namespace yongtiger\authclient\clients;
  *     [provider] => github
  *     [openid] => 19513015
  *     [fullname] => yongtiger
- *     [avatarUrl] => https://avatars.githubusercontent.com/u/19513015?v=3
- *     [linkUrl] => https://api.github.com/users/yongtiger
+ *     [avatar] => https://avatars.githubusercontent.com/u/19513015?v=3
+ *     [link] => https://api.github.com/users/yongtiger
  * )
  * ```
  *
@@ -219,11 +195,13 @@ class GitHub extends \yii\authclient\clients\GitHub implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => 'id',
             'fullname' => 'login',
-            'avatarUrl' => 'avatar_url',
-            'linkUrl' => 'url',
+            'avatar' => 'avatar_url',
+            'link' => 'url',
         ];
     }
 

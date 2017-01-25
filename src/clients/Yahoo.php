@@ -48,30 +48,6 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -233,8 +209,8 @@ use yii\authclient\OAuth2;
  *     [firstname] => tiger
  *     [lastname] => yong
  *     [language] => en-US
- *     [avatarUrl] => https://s.yimg.com/sf/modern/images/default_user_profile_pic_192.png
- *     [linkUrl] => https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile
+ *     [avatar] => https://s.yimg.com/sf/modern/images/default_user_profile_pic_192.png
+ *     [link] => https://social.yahooapis.com/v1/user/IQEUSXXTPBMUFGMWXIJOT3HDII/profile
  * )
 
  * ```
@@ -320,7 +296,9 @@ class Yahoo extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => ['guid', 'value'],
         ];
     }
@@ -347,8 +325,8 @@ class Yahoo extends OAuth2 implements IAuth
                 return $attributes['gender'] == 'M' ? static::GENDER_MALE : ($attributes['gender'] == 'F' ? static::GENDER_FEMALE : null);
             },
             'language' => 'lang',
-            'avatarUrl' => ['image', 'imageUrl'],
-            'linkUrl' => 'uri',
+            'avatar' => ['image', 'imageUrl'],
+            'link' => 'uri',
         ];
     }
 

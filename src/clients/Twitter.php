@@ -59,30 +59,6 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -163,8 +139,8 @@ namespace yongtiger\authclient\clients;
  *     [openid] => 821256943540940801
  *     [fullname] => yongtiger
  *     [language] => zh-cn
- *     [avatarUrl] => http://abs.twimg.com/sticky/default_profile_images/default_profile_6_normal.png
- *     [linkUrl] => 
+ *     [avatar] => http://abs.twimg.com/sticky/default_profile_images/default_profile_6_normal.png
+ *     [link] => 
  * )
  * ```
  *
@@ -192,12 +168,14 @@ class Twitter extends \yii\authclient\clients\Twitter implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => 'id_str',
             'fullname' => 'name',
             'language' => 'lang',
-            'avatarUrl' => 'profile_image_url',
-            'linkUrl' => 'url',
+            'avatar' => 'profile_image_url',
+            'link' => 'url',
         ];
     }
 }

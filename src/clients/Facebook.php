@@ -61,30 +61,6 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -152,8 +128,7 @@ namespace yongtiger\authclient\clients;
  *     [firstname] => Tiger
  *     [lastname] => Yong
  *     [language] => en_US
- *     [avatarUrl] => https://scontent.xx.fbcdn.net/v/t1.0-1/c15.0.50.50/p50x50/10354686_10150004552801856_220367501106153455_n.jpg?oh=978df650af5b925f321fe4050af2869f&oe=5911542F
- *     [linkUrl] => https://www.facebook.com/app_scoped_user_id/123618604810465/
+ *     [avatar] => https://scontent.xx.fbcdn.net/v/t1.0-1/c15.0.50.50/p50x50/10354686_10150004552801856_220367501106153455_n.jpg?oh=978df650af5b925f321fe4050af2869f&oe=5911542F
  * )
  * ```
  *
@@ -194,7 +169,9 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => 'id',
             'fullname' => 'name',
             'firstname' => 'first_name',
@@ -204,8 +181,7 @@ class Facebook extends \yii\authclient\clients\Facebook implements IAuth
                 return $attributes['gender'] == 'male' ? static::GENDER_MALE : ($attributes['gender'] == 'female' ? static::GENDER_FEMALE : null);
             },
             'language' => 'locale',
-            'avatarUrl' => ['picture', 'data', 'url'],
-            'linkUrl' => 'link',
+            'avatar' => ['picture', 'data', 'url'],
         ];
     }
 }

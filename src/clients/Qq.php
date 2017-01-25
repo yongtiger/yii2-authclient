@@ -56,30 +56,6 @@ use yii\httpclient\Request;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -159,7 +135,7 @@ use yii\httpclient\Request;
  *     [provider] => qq
  *     [fullname] => tiger_yang
  *     [email] => tiger_yang@qq.com
- *     [avatarUrl] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
+ *     [avatar] => http://qzapp.qlogo.cn/qzapp/101367642/42E5367A39543562249CA32DA627D8A2/100
  * )
  * ```
  *
@@ -224,7 +200,9 @@ class Qq extends OAuth2 implements IAuth
      */
     protected function userInfoNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'fullname' => 'nickname',
             'email' => function ($attributes) {
                 return isset($attributes['nickname']) ? $attributes['nickname'] . '@qq.com' : null;
@@ -233,7 +211,7 @@ class Qq extends OAuth2 implements IAuth
                 if (!isset($attributes['gender'])) return null;
                 return ($attributes['gender'] == '男' ? static::GENDER_MALE : ($attributes['gender'] == '女' ? static::GENDER_FEMALE : null));
             },
-            'avatarUrl' => 'figureurl_2',   ///you can choose others
+            'avatar' => 'figureurl_2',   ///you can choose others
         ];
     }
 

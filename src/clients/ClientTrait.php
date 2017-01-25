@@ -21,12 +21,33 @@ namespace yongtiger\authclient\clients;
 trait ClientTrait
 {
     /**
-     * Extra user info
+     * Extra user info.
      */
     private $userInfo = null;
 
     /**
-     * Get Extra User Info.
+     * Gets all User Infos at once.
+     *
+     * @return array
+     */
+    public function getUserInfos()
+    {
+        return [
+            'provider' => $this->provider,
+            'openid' => $this->openid,
+            'email' => $this->email,
+            'fullname' => $this->fullname,
+            'firstname' => $this->firstname,
+            'lastname' => $this->lastname,
+            'gender' => $this->gender,
+            'language' => $this->language,
+            'avatar' => $this->avatar,
+            'link' => $this->link,
+        ];
+    }
+
+    /**
+     * Gets specified extra user info.
      * 
      * If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
      *
@@ -53,7 +74,7 @@ trait ClientTrait
     }
 
     /**
-     * Get extra user info
+     * Gets extra user info.
      *
      * If needed, it can be overridden by trait-classes, e.g.:
      *
@@ -138,16 +159,16 @@ trait ClientTrait
     /**
      * @inheritdoc
      */
-    public function getAvatarUrl()
+    public function getAvatar()
     {
-        return isset($this->getUserAttributes()['avatarUrl']) ? $this->getUserAttributes()['avatarUrl'] : $this->getUserInfo('avatarUrl');
+        return isset($this->getUserAttributes()['avatar']) ? $this->getUserAttributes()['avatar'] : $this->getUserInfo('avatar');
     }
 
     /**
      * @inheritdoc
      */
-    public function getLinkUrl()
+    public function getLink()
     {
-        return isset($this->getUserAttributes()['linkUrl']) ? $this->getUserAttributes()['linkUrl'] : $this->getUserInfo('linkUrl');
+        return isset($this->getUserAttributes()['link']) ? $this->getUserAttributes()['link'] : $this->getUserInfo('link');
     }
 }

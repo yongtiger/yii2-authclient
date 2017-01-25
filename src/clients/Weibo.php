@@ -56,30 +56,6 @@ use yii\authclient\OAuth2;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -198,8 +174,8 @@ use yii\authclient\OAuth2;
  *     [provider] => weibo
  *     [fullname] => 老虎杨光
  *     [language] => zh-cn
- *     [avatarUrl] => http://tva3.sinaimg.cn/default/images/default_avatar_male_50.gif
- *     [linkUrl] => 
+ *     [avatar] => http://tva3.sinaimg.cn/default/images/default_avatar_male_50.gif
+ *     [link] => 
  * )
  * ```
  *
@@ -261,7 +237,9 @@ class Weibo extends OAuth2 implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => 'uid',
         ];
     }
@@ -279,8 +257,8 @@ class Weibo extends OAuth2 implements IAuth
                 return ($attributes['gender'] == 'm' ? static::GENDER_MALE : ($attributes['gender'] == 'f' ? static::GENDER_FEMALE : null));
             },
             'language' => 'lang',
-            'avatarUrl' => 'profile_image_url',
-            'linkUrl' => 'url',
+            'avatar' => 'profile_image_url',
+            'link' => 'url',
         ];
     }
 

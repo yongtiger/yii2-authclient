@@ -27,8 +27,8 @@ namespace yongtiger\authclient\clients;
         "lastname": "yang", 
         "gender": "male", 
         "language": "en_US", 
-        "avatarUrl": "https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large", 
-        "linkUrl": "https://profile.live.com/", 
+        "avatar": "https://apis.live.net/v5.0/ab30d9e58b344caa/picture?type=large", 
+        "link": "https://profile.live.com/", 
     }
  * ```
  *
@@ -37,19 +37,26 @@ namespace yongtiger\authclient\clients;
  * ```php
     public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
     {
-        // uncomment below to see which attributes you get back
-        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///the first call returns the basic information, including openid, etc.
+        ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
+        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
         echo "<pre>";print_r($client->provider);echo "</pre>";
         echo "<pre>";print_r($client->openid);echo "</pre>";
+
+        ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
         echo "<pre>";print_r($client->email);echo "</pre>";
+
+        ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
+        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
         echo "<pre>";print_r($client->fullName);echo "</pre>";
         echo "<pre>";print_r($client->firstName);echo "</pre>";
         echo "<pre>";print_r($client->lastName);echo "</pre>";
         echo "<pre>";print_r($client->language);echo "</pre>";
         echo "<pre>";print_r($client->gender);echo "</pre>";
-        echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
-        echo "<pre>";print_r($client->linkUrl);echo "</pre>";
-        echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";   ///later call returns more user information
+        echo "<pre>";print_r($client->avatar);echo "</pre>";
+        echo "<pre>";print_r($client->link);echo "</pre>";
+        
+        ///Get all user infos at once.
+        echo "<pre>";print_r($client->getUserInfos());echo "</pre>";
         exit;
         // ...
     }
@@ -111,11 +118,16 @@ interface IAuth extends \yii\authclient\ClientInterface
     /**
      * @return string|null
      */
-    public function getAvatarUrl();
+    public function getAvatar();
     
     /**
      * @return string|null
      */
-    public function getLinkUrl();
+    public function getLink();
+
+    /**
+     * @return array|null
+     */
+    public function getUserInfos();
 
 }

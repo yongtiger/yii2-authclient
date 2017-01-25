@@ -50,30 +50,6 @@ namespace yongtiger\authclient\clients;
  * ]
  * ```
  *
- * [Usage]
- * 
- * public function connectCallback(\yongtiger\authclient\clients\IAuth $client)
- * {
- *     ///Uncomment below to see which attributes you get back.
- *     ///First time to call `getUserAttributes()`, only return the basic attrabutes info for login, such as openid.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->provider);echo "</pre>";
- *     echo "<pre>";print_r($client->openid);echo "</pre>";
- *     ///If `$attribute` is not exist in the basic user attrabutes, call `initUserInfoAttributes()` and merge the results into the basic user attrabutes.
- *     echo "<pre>";print_r($client->email);echo "</pre>";
- *     ///After calling `initUserInfoAttributes()`, will return all user attrabutes.
- *     echo "<pre>";print_r($client->getUserAttributes());echo "</pre>";
- *     echo "<pre>";print_r($client->fullName);echo "</pre>";
- *     echo "<pre>";print_r($client->firstName);echo "</pre>";
- *     echo "<pre>";print_r($client->lastName);echo "</pre>";
- *     echo "<pre>";print_r($client->language);echo "</pre>";
- *     echo "<pre>";print_r($client->gender);echo "</pre>";
- *     echo "<pre>";print_r($client->avatarUrl);echo "</pre>";
- *     echo "<pre>";print_r($client->linkUrl);echo "</pre>";
- *     exit;
- *     // ...
- * }
- *
  * [EXAMPLE RESPONSE]
  *
  * Authorization URL:
@@ -115,7 +91,7 @@ namespace yongtiger\authclient\clients;
  *     [openid] => 456664807
  *     [fullname] => yong.tiger
  *     [gender] => 
- *     [avatarUrl] => 
+ *     [avatar] => 
  * )
  * ```
  *
@@ -145,7 +121,9 @@ class Yandex extends \yii\authclient\clients\Yandex implements IAuth
      */
     protected function defaultNormalizeUserAttributeMap() {
         return [
-            'provider' => $this->defaultName(),
+            'provider' => function ($attributes) {
+                return $this->defaultName();
+            },
             'openid' => 'id',
             'email' => 'default_email',
             'fullname' => 'login',
@@ -156,11 +134,11 @@ class Yandex extends \yii\authclient\clients\Yandex implements IAuth
                 return $attributes['sex'] == 'male' ? static::GENDER_MALE : ($attributes['sex'] == 'female' ? static::GENDER_FEMALE : null);
             },
             'language' => 'lang',
-            'avatarUrl' => function ($attributes) {
+            'avatar' => function ($attributes) {
                 if (!isset($attributes['default_avatar_id'])) return null;
                 return 'https://avatars.yandex.net/get-yapic/' . $attributes['default_avatar_id'];
             },
-            'linkUrl' => ['openid_identities', 0],
+            'link' => ['openid_identities', 0],
         ];
     }
 }
